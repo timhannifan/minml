@@ -2,6 +2,10 @@ import argparse
 import yaml
 import click
 
+# print()
+from components.experiment.basic import Singlethread
+# import  as mc
+
 class Minml():
     def __init__(self, config, in_path, out_path, test, verbose):
         self.config = config
@@ -15,10 +19,12 @@ class Minml():
         with open(self.config) as f:
             loaded_config = yaml.load(f)
 
-        print(loaded_config["grid_config"])
+        experiment = Singlethread(
+            config=loaded_config
+        )
+        experiment.run()
 
 if __name__ == "__main__":
-
     desc = ("Main method for running Minml pipeline")
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--config', dest='config', type=str,

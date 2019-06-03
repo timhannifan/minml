@@ -5,3 +5,5 @@ lib/__pycache__/
 *-private.yaml
 *.egg-info
 dist/*
+build/*
+*.txt
