@@ -17,7 +17,7 @@ class Minml():
             loaded_config = yaml.load(f)
 
         exp = Experiment(
-            config=loaded_config
+            arg_dict=loaded_config
         )
         exp.run()
 

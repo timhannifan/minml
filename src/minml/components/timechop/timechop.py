@@ -45,7 +45,6 @@ class Timechop(object):
         test_durations,
         test_label_timespans,
     ):
-        print('INITIALIZE TIMECHOP')
         self.feature_start_time = dt_from_str(
             feature_start_time
         )  # earliest time included in any feature
