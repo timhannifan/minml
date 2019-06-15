@@ -5,7 +5,7 @@ from components.timechop import Timechop
 
 
 
-class Singlethread():
+class Experiment():
     def __init__(self, config):
         self.config = config
         random.seed(config['random_seed'])
