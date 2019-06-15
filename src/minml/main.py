@@ -2,9 +2,7 @@ import argparse
 import yaml
 import click
 
-# print()
 from components.experiment.basic import Singlethread
-# import  as mc
 
 class Minml():
     def __init__(self, config, in_path, out_path, test, verbose):
