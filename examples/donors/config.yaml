@@ -1,5 +1,6 @@
 model_comment: 'donors choose example'
 input_path: "../../examples/donors/small.csv"
+project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 
 random_seed: 23895478

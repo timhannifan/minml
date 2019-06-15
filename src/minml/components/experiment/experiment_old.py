@@ -6,10 +6,7 @@ from components.timechop import Timechop
 import pandas as pd
 import csv
 
-from .experiment_db import Client
 
-# run cleaned.sql
-# run semantic.sql
 
 class Experiment():
     def __init__(self, arg_dict):
@@ -17,8 +14,7 @@ class Experiment():
 
         random.seed(self.arg_dict.get('random_seed', 123456))
 
-        # self.read_data()
-        self.generate_db()
+        self.read_data()
         self.initialize_components()
 
     def initialize_components(self):
@@ -34,12 +30,6 @@ class Experiment():
         self.raw_df = pd.read_csv(path)
 
         #self.write_result(df.iloc[0])
-    def generate_db(self):
-        click.echo(f"Generating db")
-        dbclient = Client(self.arg_dict['project_path'])
-        dbclient.run()
-
-
 
     def write_result(self, row):
         with open(self.arg_dict['output_path'], 'w', newline='') as f:
