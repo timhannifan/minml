@@ -2,7 +2,7 @@ import click
 import psycopg2 as pg
 import csv
 
-class Client:
+class DBEngine:
     def __init__(self, project_path, data_file_path):
         self.dbname = "timhannifan"
         self.dbhost = "127.0.0.1"

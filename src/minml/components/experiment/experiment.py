@@ -3,8 +3,8 @@ import random
 import logging
 import click
 
-from .experiment_db import Client
-from .time import get_date_splits
+from .db_engine import DBEngine
+from .time_utils import get_date_splits
 
 
 
@@ -13,7 +13,7 @@ class Experiment():
     def __init__(self, arg_dict, load_db):
         self.arg_dict = arg_dict
         self.load_db = load_db
-        self.dbclient = Client(self.arg_dict['project_path'],
+        self.dbclient = DBEngine(self.arg_dict['project_path'],
                   self.arg_dict['input_path'])
 
         random.seed(self.arg_dict.get('random_seed', 123456))
