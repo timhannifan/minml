@@ -13,8 +13,14 @@ class Experiment():
     def __init__(self, arg_dict, load_db):
         self.arg_dict = arg_dict
         self.load_db = load_db
+        self.dbclient = Client(self.arg_dict['project_path'],
+                  self.arg_dict['input_path'])
 
         random.seed(self.arg_dict.get('random_seed', 123456))
+
+        if load_db:
+            self.dbclient.run()
+
         self.initialize_components()
 
 
@@ -29,12 +35,6 @@ class Experiment():
         click.echo(f"Completed initializing components")
 
 
-    def generate_db(self):
-        click.echo(f"Generating db")
-        dbclient = Client(self.arg_dict['project_path'],
-                          self.arg_dict['input_path'])
-        dbclient.run()
-
 
     def write_result(self, row):
         with open(self.arg_dict['output_path'], 'w', newline='') as f:
@@ -47,5 +47,11 @@ class Experiment():
         splits = self.splits
 
         for split in splits:
-            print('were rolling!')
+            tr_s, tr_e, te_s, te_e = split
+
+            train = self.dbclient.fetch_data(tr_s, tr_e)
+            test = self.dbclient.fetch_data(tr_s, tr_e)
+
+            print(len(train), len(test))
+
 

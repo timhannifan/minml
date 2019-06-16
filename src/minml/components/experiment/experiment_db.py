@@ -104,12 +104,27 @@ class Client:
             self.conn.close()
             self.conn = None
 
+    def fetch_data(self, start, end):
+        click.echo(f"Fetching data")
+        cur = self.get_db_cursor()
+
+
+        cmd = """
+        select *
+        from semantic.events
+        where date::timestamp between '%s' and '%s';
+        """ %(start, end)
+
+        cur.execute(cmd)
+        results = cur.fetchall()
+
+        self.disconnect()
+
+        return results
+
     # Create any tables needed by this Client. Drop table if exists first.
     def create_tables(self):
-        if self.is_open() == False:
-            self.open_connection()
-
-        cur = self.conn.cursor()
+        cur = self.get_db_cursor()
 
         for col in TABLES:
             drop_statement = 'DROP TABLE IF EXISTS {} CASCADE;'.format(col)
@@ -181,6 +196,17 @@ class Client:
                 self.conn.commit()
             except:
                 print("Command skipped: ", command)
+
+
+    def disconnect(self):
+        '''
+        Closes db connection
+        Returns: nothing
+        '''
+        if self.conn is not None:
+            self.conn.cursor().close()
+        self.close_connection()
+
 
     def get_db_cursor(self):
         '''
