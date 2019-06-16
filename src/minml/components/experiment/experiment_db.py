@@ -2,81 +2,6 @@ import click
 import psycopg2 as pg
 import csv
 
-TABLES = ['raw', 'raw_projects']
-IDXS = [
-"""
-CREATE INDEX date ON semantic.events (date);
-"""
-]
-CREATE_COMMANDS = [
-            """
-            CREATE TABLE raw (
-                projectid VARCHAR(50) PRIMARY KEY UNIQUE,
-                teacher_acctid VARCHAR,
-                schoolid VARCHAR(50),
-                school_ncesid DECIMAL,
-                school_latitude DECIMAL,
-                school_longitude DECIMAL,
-                school_city VARCHAR(50),
-                school_state VARCHAR(2),
-                school_metro VARCHAR(50),
-                school_district VARCHAR(200),
-                school_county VARCHAR(50),
-                school_charter VARCHAR(50),
-                school_magnet VARCHAR(50),
-                teacher_prefix VARCHAR(50),
-                primary_focus_subject VARCHAR(50),
-                primary_focus_area VARCHAR(50),
-                secondary_focus_subject VARCHAR(50),
-                secondary_focus_area VARCHAR(50),
-                resource_type VARCHAR(50),
-                poverty_level VARCHAR(50),
-                grade_level VARCHAR(50),
-                total_price_including_optional_support DECIMAL,
-                students_reached INT,
-                eligible_double_your_impact_match VARCHAR(2),
-                date_posted TIMESTAMP,
-                datefullyfunded TIMESTAMP
-                )
-            """,
-            """
-            CREATE TABLE raw_projects (
-                projectid VARCHAR(50) PRIMARY KEY UNIQUE,
-                teacher_acctid VARCHAR,
-                -- schoolid VARCHAR(50),
-                -- school_ncesid DECIMAL,
-                -- school_latitude DECIMAL,
-                -- school_longitude DECIMAL,
-                school_city VARCHAR(50),
-                school_state VARCHAR(2),
-                -- school_metro VARCHAR(50),
-                -- school_district VARCHAR(200),
-                school_county VARCHAR(50),
-                -- school_charter VARCHAR(50),
-                -- school_magnet VARCHAR(50),
-                -- teacher_prefix VARCHAR(50),
-                primary_focus_subject VARCHAR(50),
-                -- primary_focus_area VARCHAR(50),
-                -- secondary_focus_subject VARCHAR(50),
-                -- secondary_focus_area VARCHAR(50),
-                resource_type VARCHAR(50),
-                poverty_level VARCHAR(50),
-                grade_level VARCHAR(50),
-                total_price_including_optional_support DECIMAL,
-                students_reached INT,
-                -- eligible_double_your_impact_match VARCHAR(2),
-                date_posted TIMESTAMP,
-                datefullyfunded TIMESTAMP
-                )
-            """
-            ]
-BULK_INSERTS = [
-    """
-    INSERT INTO raw_projects (projectid,teacher_acctid,school_city,school_state,school_county,primary_focus_subject,resource_type,poverty_level,grade_level,total_price_including_optional_support,students_reached,date_posted,datefullyfunded)
-    SELECT DISTINCT projectid,teacher_acctid,school_city,school_state,school_county,primary_focus_subject,resource_type,poverty_level,grade_level,total_price_including_optional_support,students_reached,date_posted,datefullyfunded
-    FROM raw;
-    """]
-
 class Client:
     def __init__(self, project_path, data_file_path):
         self.dbname = "timhannifan"
@@ -88,7 +13,83 @@ class Client:
         self.project_path = project_path
         self.clean_sql = self.project_path + 'db_clean.sql'
         self.semantic_sql = self.project_path + 'db_semantic.sql'
+        self.insert_sql = self.project_path + 'db_insert.sql'
+        self.drop_and_create_sql = self.project_path + 'db_create.sql'
+        self.index_sql = self.project_path + 'db_index.sql'
         self.data_path = data_file_path
+
+    def fetch_data(self, start, end):
+        cur = self.get_db_cursor()
+
+        cmd = """
+        select *
+        from semantic.events
+        where date::timestamp between '%s' and '%s';
+        """ %(start, end)
+
+        cur.execute(cmd)
+        results = cur.fetchall()
+        self.close_connection()
+
+        return results
+
+    # Create any tables needed by this Client. Drop table if exists first.
+    def create_tables(self):
+        click.echo(f"Creating tables")
+        dc_commands = get_sql_contents(self.drop_and_create_sql)
+        self.execute_sql(dc_commands)
+
+    # Add at least two indexes to the tables to improve analytic queries.
+    def add_indices(self):
+        click.echo(f"Adding Indexes")
+        index_commands = get_sql_contents(self.index_sql)
+        self.execute_sql(index_commands)
+
+        click.echo(f"Adding Indexes")
+        cur = self.get_db_cursor()
+
+    # This function will bulk load the data using copy
+    def bulk_load_file(self):
+        click.echo(f"Bulk load file")
+        cur = self.get_db_cursor()
+        drop_statement = 'DROP TABLE IF EXISTS {};'.format('raw')
+
+        cur.execute(drop_statement)
+
+        copy_sql = """
+           COPY raw FROM stdin WITH CSV HEADER
+           DELIMITER as ','
+           """
+
+        with open(self.data_path, 'r') as f:
+            reader = csv.reader(f, delimiter=',')
+            cur.copy_expert(sql=copy_sql, file=f)
+            insert_commands = get_sql_contents(self.insert_sql)
+            self.execute_sql(insert_commands)
+
+        self.close_connection()
+
+    def clean_raw(self):
+        commands = get_sql_contents(self.clean_sql)
+        self.execute_sql(commands)
+
+
+    def generate_events_entities(self):
+        commands = get_sql_contents(self.semantic_sql)
+        self.execute_sql(commands)
+
+
+    def execute_sql(self, commands):
+        # pass a list of sql commands
+        cur = self.get_db_cursor()
+        for command in commands:
+            try:
+                cur.execute(command)
+                self.conn.commit()
+            except (Exception, pg.DatabaseError) as error:
+                print(error)
+            finally:
+                self.close_connection()
 
     # open a connection to a psql database, using the self.dbXX parameters
     def open_connection(self):
@@ -103,110 +104,6 @@ class Client:
         if self.is_open():
             self.conn.close()
             self.conn = None
-
-    def fetch_data(self, start, end):
-        click.echo(f"Fetching data")
-        cur = self.get_db_cursor()
-
-
-        cmd = """
-        select *
-        from semantic.events
-        where date::timestamp between '%s' and '%s';
-        """ %(start, end)
-
-        cur.execute(cmd)
-        results = cur.fetchall()
-
-        self.disconnect()
-
-        return results
-
-    # Create any tables needed by this Client. Drop table if exists first.
-    def create_tables(self):
-        cur = self.get_db_cursor()
-
-        for col in TABLES:
-            drop_statement = 'DROP TABLE IF EXISTS {} CASCADE;'.format(col)
-            cur.execute(drop_statement)
-
-        for command in CREATE_COMMANDS:
-            cur.execute(command)
-
-        cur.close()
-        self.conn.commit()
-        self.close_connection()
-
-    # Add at least two indexes to the tables to improve analytic queries.
-    def add_indices(self):
-        click.echo(f"Adding Indexes")
-        cur = self.get_db_cursor()
-
-        for idx in IDXS:
-            cur.execute(idx)
-            self.conn.commit()
-
-        cur.close()
-
-    # This function will bulk load the data using copy
-    def bulk_load_file(self):
-        click.echo(f"Bulk load file")
-        cur = self.get_db_cursor()
-        drop_statement = 'DROP TABLE IF EXISTS {};'.format('bulk_temp')
-        cur.execute(drop_statement)
-
-        copy_sql = """
-           COPY raw FROM stdin WITH CSV HEADER
-           DELIMITER as ','
-           """
-
-        with open(self.data_path, 'r') as f:
-            try:
-                reader = csv.reader(f, delimiter=',')
-
-                cur.copy_expert(sql=copy_sql, file=f)
-                for insert in BULK_INSERTS:
-                    cur.execute(insert)
-                self.conn.commit()
-                cur.close()
-
-            except (Exception, pg.DatabaseError) as error:
-                print(error)
-            finally:
-                if self.conn is not None:
-                    cur.close()
-                self.close_connection()
-
-
-    def clean_raw(self):
-        commands = get_sql_contents(self.clean_sql)
-        self.execute_sql(commands)
-
-
-    def generate_events_entities(self):
-        commands = get_sql_contents(self.semantic_sql)
-        self.execute_sql(commands)
-
-
-    def execute_sql(self, commands):
-        cur = self.get_db_cursor()
-        for command in commands:
-            try:
-                cur.execute(command)
-                self.conn.commit()
-            except:
-                print("Command skipped: ", command)
-
-
-    def disconnect(self):
-        '''
-        Closes db connection
-        Returns: nothing
-        '''
-        if self.conn is not None:
-            self.conn.cursor().close()
-        self.close_connection()
-
 
     def get_db_cursor(self):
         '''

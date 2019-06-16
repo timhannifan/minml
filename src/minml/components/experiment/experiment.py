@@ -32,9 +32,6 @@ class Experiment():
         if self.load_db:
             self.generate_db()
 
-        click.echo(f"Completed initializing components")
-
-
 
     def write_result(self, row):
         with open(self.arg_dict['output_path'], 'w', newline='') as f:
@@ -47,11 +44,10 @@ class Experiment():
         splits = self.splits
 
         for split in splits:
+            click.echo("\nStarting split")
             tr_s, tr_e, te_s, te_e = split
+            click.echo("Train dates: %s to %s" % (tr_s,tr_e))
+            click.echo("Test dates: %s to %s" % (te_s,te_e))
 
             train = self.dbclient.fetch_data(tr_s, tr_e)
             test = self.dbclient.fetch_data(tr_s, tr_e)
-
-            print(len(train), len(test))
-
-

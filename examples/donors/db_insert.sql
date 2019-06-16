@@ -1,0 +1,3 @@
+INSERT INTO raw_projects (projectid,teacher_acctid,school_city,school_state,school_county,primary_focus_subject,resource_type,poverty_level,grade_level,total_price_including_optional_support,students_reached,date_posted,datefullyfunded)
+SELECT DISTINCT projectid,teacher_acctid,school_city,school_state,school_county,primary_focus_subject,resource_type,poverty_level,grade_level,total_price_including_optional_support,students_reached,date_posted,datefullyfunded
+FROM raw;
