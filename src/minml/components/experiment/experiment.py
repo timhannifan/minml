@@ -2,7 +2,7 @@ import csv
 import random
 import logging
 import click
-from components.timechop import Timechop
+
 from .experiment_db import Client
 from .time import get_date_splits
 
@@ -21,7 +21,7 @@ class Experiment():
     def initialize_components(self):
         click.echo(f"Initializing components")
 
-        self.splits = get_date_splits()
+        self.splits = get_date_splits(self.arg_dict['temporal_config'])
 
         if self.load_db:
             self.generate_db()

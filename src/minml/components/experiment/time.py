@@ -1,16 +1,17 @@
 
-def get_date_splits():
+def get_date_splits(config):
+    print(config)
     # start time of our data
-    start_time = '2012-01-01'
+    start_time = config['start_time']
 
     #last date of data including labels and outcomes that we have
-    end_time = '2014-01-01'
+    end_time = config['end_time']
 
     #how far out do we want to predict (let's say in months for now)
-    prediction_windows = [6]
+    prediction_windows = config['prediction_windows']
 
     #how often is this prediction being made? every day? every month? once a year?
-    update_window = 6
+    model_update_frequency = config['model_update_frequency']
 
     from datetime import date, datetime, timedelta
     from dateutil.relativedelta import relativedelta
@@ -26,5 +27,5 @@ def get_date_splits():
             train_end_time = test_start_time  - relativedelta(days=+1) # minus 1 day
 
             res.append((train_start_time,train_end_time,test_start_time,test_end_time))
-            test_end_time -= relativedelta(months=+update_window)
+            test_end_time -= relativedelta(months=+model_update_frequency)
     return res
