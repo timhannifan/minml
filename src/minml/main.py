@@ -12,10 +12,10 @@ class Minml():
     def run(self):
         click.echo(f"Running Minml with config: {self.config}")
         with open(self.config) as f:
-            loaded_config = yaml.load(f)
+            experiment_config = yaml.load(f)
 
         exp = Experiment(
-            arg_dict=loaded_config,
+            experiment_config=experiment_config,
             load_db=self.load_db)
         exp.run()
 
