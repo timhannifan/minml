@@ -1,58 +1,51 @@
+import csv
 import random
 import logging
 import click
 from components.timechop import Timechop
-
-import pandas as pd
-import csv
-
 from .experiment_db import Client
+from .time import get_date_splits
 
-# run cleaned.sql
-# run semantic.sql
+
+
 
 class Experiment():
-    def __init__(self, arg_dict):
+    def __init__(self, arg_dict, load_db):
         self.arg_dict = arg_dict
+        self.load_db = load_db
 
         random.seed(self.arg_dict.get('random_seed', 123456))
-
-        # self.read_data()
-        self.generate_db()
         self.initialize_components()
+
 
     def initialize_components(self):
         click.echo(f"Initializing components")
 
-        self.chopper = Timechop(**self.arg_dict["temporal_config"])
-        self.splits = self.chopper.chop_time()
-        self.labels = self.generate_labels()
+        self.splits = get_date_splits()
 
-    def read_data(self):
-        click.echo(f"Reading data")
-        path = self.arg_dict['input_path']
-        self.raw_df = pd.read_csv(path)
+        if self.load_db:
+            self.generate_db()
 
-        #self.write_result(df.iloc[0])
+        click.echo(f"Completed initializing components")
+
+
     def generate_db(self):
         click.echo(f"Generating db")
-        dbclient = Client(self.arg_dict['project_path'])
+        dbclient = Client(self.arg_dict['project_path'],
+                          self.arg_dict['input_path'])
         dbclient.run()
-
 
 
     def write_result(self, row):
         with open(self.arg_dict['output_path'], 'w', newline='') as f:
             fmanager = csv.writer(f, delimiter=' ',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            fmanager.writerow(['Spam'] * 5 + ['Baked Beans'])
-            fmanager.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+                                    quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            fmanager.writerow(row)
 
-    def generate_labels(self):
-        label_config = self.arg_dict.get('label_config')
-
-        click.echo(f"Generate labels on column: %s" % label_config['name'])
 
     def run(self):
-        pass
+        splits = self.splits
+
+        for split in splits:
+            print('were rolling!')
 

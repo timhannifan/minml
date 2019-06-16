@@ -5,11 +5,9 @@ import click
 from components.experiment import Experiment
 
 class Minml():
-    def __init__(self, config, in_path, out_path, test):
+    def __init__(self, config, load_db):
         self.config = config
-        self.in_path = in_path
-        self.out_path = out_path
-        self.test = test
+        self.load_db = load_db
 
     def run(self):
         click.echo(f"Running Minml with config: {self.config}")
@@ -17,8 +15,8 @@ class Minml():
             loaded_config = yaml.load(f)
 
         exp = Experiment(
-            arg_dict=loaded_config
-        )
+            arg_dict=loaded_config,
+            load_db=self.load_db)
         exp.run()
 
 if __name__ == "__main__":
@@ -26,18 +24,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--config', dest='config', type=str,
                         help=('Model config path'))
-    parser.add_argument('--in_path', dest='in_path', type=str,
-                        help=('Input data file location'))
-    parser.add_argument('--out_path', dest='out_path', type=str, default='',
-                        help=('Output directory'))
-    parser.add_argument('--test', dest='test', type=bool, default=0,
-                        help=('Select this option to run a test version'))
+    parser.add_argument('--load_db', dest='load_db', type=bool, default=0,
+                        help=('Select this option to initalize DB'))
     args = parser.parse_args()
-    args_dict = {'config': str(args.config),
-                 'in_path': str(args.in_path),
-                 'out_path': str(args.out_path),
-                 'test': bool(args.test)}
 
-    m = Minml(**args_dict)
+    m = Minml(str(args.config), bool(args.load_db))
     m.run()
-

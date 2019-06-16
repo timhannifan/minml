@@ -3,7 +3,11 @@ import psycopg2 as pg
 import csv
 
 TABLES = ['raw', 'raw_projects']
-IDXS = []
+IDXS = [
+"""
+CREATE INDEX date ON semantic.events (date);
+"""
+]
 CREATE_COMMANDS = [
             """
             CREATE TABLE raw (
@@ -74,7 +78,7 @@ BULK_INSERTS = [
     """]
 
 class Client:
-    def __init__(self, project_path):
+    def __init__(self, project_path, data_file_path):
         self.dbname = "timhannifan"
         self.dbhost = "127.0.0.1"
         self.dbport = 5432
@@ -84,7 +88,7 @@ class Client:
         self.project_path = project_path
         self.clean_sql = self.project_path + 'db_clean.sql'
         self.semantic_sql = self.project_path + 'db_semantic.sql'
-        self.data_path = self.project_path + 'data.csv'
+        self.data_path = data_file_path
 
     # open a connection to a psql database, using the self.dbXX parameters
     def open_connection(self):
@@ -119,12 +123,9 @@ class Client:
         self.close_connection()
 
     # Add at least two indexes to the tables to improve analytic queries.
-    def add_indexes(self):
+    def add_indices(self):
         click.echo(f"Adding Indexes")
-        if not self.conn:
-            self.open_connection()
-
-        cur = self.conn.cursor()
+        cur = self.get_db_cursor()
 
         for idx in IDXS:
             cur.execute(idx)
@@ -134,13 +135,8 @@ class Client:
 
     # This function will bulk load the data using copy
     def bulk_load_file(self):
-
         click.echo(f"Bulk load file")
-        if self.is_open() == False:
-            self.open_connection()
-
-        cur = self.conn.cursor()
-
+        cur = self.get_db_cursor()
         drop_statement = 'DROP TABLE IF EXISTS {};'.format('bulk_temp')
         cur.execute(drop_statement)
 
@@ -200,7 +196,8 @@ class Client:
         self.create_tables()
         self.bulk_load_file()
         self.clean_raw()
-        # self.generate_events_entities()
+        self.generate_events_entities()
+        self.add_indices()
 
 
 def get_sql_contents(fname):
