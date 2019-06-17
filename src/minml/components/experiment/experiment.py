@@ -8,7 +8,6 @@ import statistics
 from .db_engine import DBEngine
 from .time_utils import get_date_splits
 from components.generator.features import FeatureGenerator
-from components.model.fitter import ModelFitter
 
 import numpy as np
 from sklearn.model_selection import ParameterGrid
@@ -30,7 +29,6 @@ class Experiment():
         self.dbclient = DBEngine(self.config['project_path'],
                   self.config['input_path'], self.db_config)
         self.feature_gen = FeatureGenerator(self.config['feature_generation'])
-        self.fitter = ModelFitter()
         self.splits = get_date_splits(self.config['temporal_config'])
 
         random.seed(self.config.get('random_seed', 123456))
