@@ -58,8 +58,8 @@ class Experiment():
 
                 # For this model, iterate through parameter combinations
                 for params in param_combinations:
-                    pass
-                    # self.fitter.train(sk_model, params, rich_train_x, train_y)
+                    # pass
+                    self.fitter.train(sk_model, params, rich_train_x, train_y)
 
         click.echo(f"Experiment finished")
 

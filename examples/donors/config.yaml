@@ -47,25 +47,12 @@ scoring:
 
 feature_generation:
     -
-        # Categorical features. The column given can be of any type, but the
-        # choices must comparable to that type for equality within SQL
-        # The result will be one feature for each choice/metric combination
         categoricals:
             -
                 column: 'poverty'
                 imputation:
                     sum:
                         type: 'null_category'
-                    max:
-                        type: 'mean'
                     choice_query: 'select distinct poverty from semantic.entities'
-                metrics:
-                    - 'sum'
-            -
-                column: 'shape'
-                imputation:
-                    all:
-                        type: 'zero'
-                choice_query: 'select distinct shape from cool_stuff'
                 metrics:
                     - 'sum'

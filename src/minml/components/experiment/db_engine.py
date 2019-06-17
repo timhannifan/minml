@@ -33,7 +33,8 @@ class DBEngine:
         column_names = [desc[0] for desc in cur.description]
         arr = pd.DataFrame(results, columns=column_names)
 
-        x = arr.iloc[:,1:-2]
+        # TODO: fix columns
+        x = arr.iloc[:,-4:-3]
         y = arr.iloc[:,-1]
 
         self.close_connection()
