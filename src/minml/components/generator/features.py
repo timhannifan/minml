@@ -5,7 +5,15 @@ class FeatureGenerator():
         self.params = params
 
 
-    def transform(self, data):
+    def transform(self, df):
         click.echo(f"Starting feature generation")
-        print(len(data))
-        # print(self.params)
+
+        for transf_type in self.params:
+            for k,v in transf_type.items():
+                print(k)
+                for i in v:
+                    print(i)
+        # print(df.describe())
+
+        # print(df.columns)
+        # return df

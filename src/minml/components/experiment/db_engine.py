@@ -1,7 +1,7 @@
 import click
 import psycopg2 as pg
 import csv
-import numpy as np
+import pandas as pd
 
 class DBEngine:
     def __init__(self, project_path, data_file_path):
@@ -30,10 +30,11 @@ class DBEngine:
 
         cur.execute(cmd)
         results = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+        arr = pd.DataFrame(results, columns=column_names)
 
-        arr = np.array(results)
-        x = arr[:, 1:-2]
-        y = arr[:,-1]
+        x = arr.iloc[:,1:-2]
+        y = arr.iloc[:,-1]
 
         self.close_connection()
 

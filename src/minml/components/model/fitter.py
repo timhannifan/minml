@@ -1,6 +1,8 @@
 import click
 import importlib
 
+import pandas as pd
+
 class ModelFitter():
     def __init__(self):
         pass
@@ -15,6 +17,9 @@ class ModelFitter():
         module = importlib.import_module(module_name)
         cls = getattr(module, class_name)
         instance = cls(**params)
+
+        # print(type(train_x))
+        df = pd.DataFrame(train_x)
 
         return instance.fit(train_x, train_y)
 

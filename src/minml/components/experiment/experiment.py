@@ -50,15 +50,16 @@ class Experiment():
             # Features generated on training only
             rich_train_x = self.feature_gen.transform(train_x)
 
-            # # Iterate through config models
-            # for sk_model, param_dict in model_config.items():
-            #     click.echo(
-            #         "\nStarting model: %s on end %s with" % (sk_model, tr_e))
-            #     param_combinations = list(ParameterGrid(param_dict))
+            # Iterate through config models
+            for sk_model, param_dict in model_config.items():
+                click.echo(
+                    "\nStarting model: %s on end %s with" % (sk_model, tr_e))
+                param_combinations = list(ParameterGrid(param_dict))
 
-            #     # For this model, iterate through parameter combinations
-            #     for params in param_combinations:
-            #         self.fitter.train(sk_model, params, rich_train_x, train_y)
+                # For this model, iterate through parameter combinations
+                for params in param_combinations:
+                    pass
+                    # self.fitter.train(sk_model, params, rich_train_x, train_y)
 
         click.echo(f"Experiment finished")
 
