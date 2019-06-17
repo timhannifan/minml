@@ -47,8 +47,9 @@ class Experiment():
             train_x, train_y = self.dbclient.fetch_data(tr_s, tr_e)
             test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
 
-            # Features generated on training only
+            # Running feature transformations on train/test x data
             rich_train_x = self.feature_gen.transform(train_x)
+            rich_test_x = self.feature_gen.transform(test_x)
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
@@ -59,7 +60,9 @@ class Experiment():
                 # For this model, iterate through parameter combinations
                 for params in param_combinations:
                     # pass
-                    self.fitter.train(sk_model, params, rich_train_x, train_y)
+                    clf = self.fitter.train(sk_model, params, rich_train_x, train_y)
+                    print(params)
+                    print("model score: %.3f" % clf.score(rich_test_x, test_y))
 
         click.echo(f"Experiment finished")
 
