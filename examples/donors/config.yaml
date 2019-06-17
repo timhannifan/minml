@@ -1,5 +1,5 @@
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data_full.csv"
+input_path: "../../examples/donors/data_small.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 
@@ -21,13 +21,13 @@ label_config:
 
 
 model_config:
-    'sklearn.dummy.DummyClassifier':
-        strategy: [most_frequent]
+    # 'sklearn.dummy.DummyClassifier':
+    #     strategy: [most_frequent]
     'sklearn.ensemble.ExtraTreesClassifier':
-        n_estimators: [5,5]
+        n_estimators: [5]
         criterion: [entropy]
-        max_depth: [1,5]
-        min_samples_split: [2,5]
+        max_depth: [1,2]
+        min_samples_split: [2]
 
 scoring:
   testing_metric_groups:

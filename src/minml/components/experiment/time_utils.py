@@ -1,6 +1,5 @@
 
 def get_date_splits(config):
-    print(config)
     # start time of our data
     start_time = config['start_time']
 

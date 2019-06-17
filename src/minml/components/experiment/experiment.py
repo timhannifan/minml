@@ -8,6 +8,8 @@ from .time_utils import get_date_splits
 from components.generator.features import FeatureGenerator
 from components.model.fitter import ModelFitter
 
+from sklearn.model_selection import ParameterGrid
+
 
 
 
@@ -46,33 +48,28 @@ class Experiment():
 
     def run(self):
         model_config = self.config['model_config']
-        for k, v in model_config.items():
-            # print(type(v))
+        splits = self.splits
 
-            print (k)
+        for i, split in enumerate(splits):
+            click.echo("\nStarting split: %s of %s" % (i, len(splits)))
+            tr_s, tr_e, te_s, te_e = split
 
-            for param_k, param_v in v.items():
-                print(param_k, param_v)
+            train = self.dbclient.fetch_data(tr_s, tr_e)
+            test = self.dbclient.fetch_data(tr_s, tr_e)
 
-        # splits = self.splits
+            # Features generated on training only
+            rich_train = self.feature_gen.transform(train)
 
-        # for split in splits:
-        #     click.echo("\nStarting split")
-        #     tr_s, tr_e, te_s, te_e = split
-        #     click.echo("Train dates: %s to %s" % (tr_s,tr_e))
-        #     click.echo("Test dates: %s to %s" % (te_s,te_e))
+            # Iterate through config models
+            for sk_model, param_dict in model_config.items():
+                click.echo(
+                    "\nStarting model: %s on end %s with" % (sk_model, tr_e))
+                param_combinations = list(ParameterGrid(param_dict))
 
-        #     train = self.dbclient.fetch_data(tr_s, tr_e)
-        #     test = self.dbclient.fetch_data(tr_s, tr_e)
+                # For this model, iterate through parameter combinations
+                for combo in param_combinations:
+                    self.fitter.fit(sk_model, combo, train, test)
 
-        #     rich_train = self.feature_gen.transform(train)
-        #     rich_test = self.feature_gen.transform(test)
-
-        #     model_config = self.config['model_config']
-
-
-
-        #     self.fitter.fit(train, test)
-
+        click.echo(f"Experiment finished")
 
 
