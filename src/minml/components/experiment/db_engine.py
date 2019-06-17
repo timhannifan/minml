@@ -4,12 +4,12 @@ import csv
 import pandas as pd
 
 class DBEngine:
-    def __init__(self, project_path, data_file_path):
-        self.dbname = "timhannifan"
-        self.dbhost = "127.0.0.1"
-        self.dbport = 5432
-        self.dbusername = "timhannifan"
-        self.dbpasswd = ""
+    def __init__(self, project_path, data_file_path, db_config):
+        self.dbname = db_config['db']
+        self.dbhost = db_config['host']
+        self.dbport = db_config['port']
+        self.dbusername = db_config['user']
+        self.dbpasswd = db_config['pass']
         self.conn = None
         self.project_path = project_path
         self.clean_sql = self.project_path + 'db_clean.sql'
@@ -38,14 +38,12 @@ class DBEngine:
         y = arr.iloc[:,-1]
 
         self.close_connection()
-
         return (x, y)
 
     # Create any tables needed by this Client. Drop table if exists first.
     def create_tables(self):
         click.echo(f"Creating tables")
         dc_commands = get_sql_contents(self.drop_and_create_sql)
-        # print(dc_commands)
         self.execute_sql(dc_commands)
 
 
@@ -73,6 +71,7 @@ class DBEngine:
             self.execute_sql(insert_commands)
 
         self.close_connection()
+
 
     def clean_raw(self):
         commands = get_sql_contents(self.clean_sql)

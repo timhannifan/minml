@@ -23,11 +23,12 @@ warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 import pandas as pd
 
 class Experiment():
-    def __init__(self, experiment_config, load_db):
+    def __init__(self, experiment_config, db_config, load_db):
         self.config = experiment_config
+        self.db_config = db_config
         self.load_db = load_db
         self.dbclient = DBEngine(self.config['project_path'],
-                  self.config['input_path'])
+                  self.config['input_path'], self.db_config)
         self.feature_gen = FeatureGenerator(self.config['feature_generation'])
         self.fitter = ModelFitter()
         self.splits = get_date_splits(self.config['temporal_config'])
@@ -44,10 +45,11 @@ class Experiment():
 
 
     def write_result(self, row):
-        with open(self.config['output_path'], 'w', newline='') as f:
-            fmanager = csv.writer(f, delimiter=' ',
-                                    quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            fmanager.writerow(row)
+        with open(self.config['output_path'], "a+", newline='') as f:
+            # fmanager = csv.writer(f, delimiter=' ',
+            #                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            f.write(','.join([str(x) for x in row])+'\n'
+                )
 
 
     def metrics_at_k(self, k, test_y, probs, metric_name):
@@ -77,9 +79,10 @@ class Experiment():
             return skmetric(sorted_test_y, predictions_at_k)
 
 
-    def evaluate(self, clf, data, y_hats, probs):
+    def evaluate(self,clf, data, y_hats, probs, split, sk_model, params):
         score_config = self.config['scoring']
         train_x, train_y, test_x, test_y = data
+        tr_s, tr_e, te_s, te_e = split
         testing_metric_list = score_config['testing_metric_groups']
 
         for metric_dict in testing_metric_list:
@@ -93,20 +96,21 @@ class Experiment():
                 if 'percentiles' in thresh:
                     for k in thresh['percentiles']:
                         for m in metrics:
-                            # print(m,p)
                             m_at_k = self.metrics_at_k(k, test_y, probs, m)
-                            # self.get_pct_metrics(m, p)
-                            print('m_at_k', m, k, m_at_k)
-                if 'top_n' in thresh:
-                    for n in thresh['top_n']:
-                        for m in metrics:
-                            # print(m,n)
-                            self.get_top_n_metrics(m, n)
 
+                            report = [tr_s, tr_e, te_s, te_e, sk_model,
+                                      params, m, k, m_at_k]
+
+                            self.write_result(report)
+                # if 'top_n' in thresh:
+                #     for n in thresh['top_n']:
+                #         for m in metrics:
+                #             pass
 
             else:
                 print('no thresholds', metric)
                 pass
+
 
     def get_predicted_probabilities(self, clf, test_x):
         """
@@ -125,11 +129,6 @@ class Experiment():
             predicted_prob = (prob - prob.min()) / (prob.max() - prob.min())
 
         return predicted_prob
-
-    def get_pct_metrics(self, metric, pct):
-        print('getting pct metrics', metric, pct)
-    def get_top_n_metrics(self, metric, n):
-        print('getting top n metrics', metric, n)
 
     def train(self, sk_model, params, data):
         click.echo("Starting model fit on %s" % (sk_model))
@@ -171,8 +170,13 @@ class Experiment():
 
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
-                    self.evaluate(clf, data, y_hats, probs)
+                    self.evaluate(clf,
+                                data,
+                                y_hats,
+                                probs,
+                                split,
+                                sk_model,
+                                params)
 
         click.echo(f"Experiment finished")
-
 
