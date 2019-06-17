@@ -43,7 +43,9 @@ class DBEngine:
     def create_tables(self):
         click.echo(f"Creating tables")
         dc_commands = get_sql_contents(self.drop_and_create_sql)
+        # print(dc_commands)
         self.execute_sql(dc_commands)
+
 
     # Add at least two indexes to the tables to improve analytic queries.
     def add_indices(self):
@@ -51,16 +53,11 @@ class DBEngine:
         index_commands = get_sql_contents(self.index_sql)
         self.execute_sql(index_commands)
 
-        click.echo(f"Adding Indexes")
-        cur = self.get_db_cursor()
 
     # This function will bulk load the data using copy
     def bulk_load_file(self):
         click.echo(f"Bulk load file")
         cur = self.get_db_cursor()
-        drop_statement = 'DROP TABLE IF EXISTS {};'.format('raw')
-
-        cur.execute(drop_statement)
 
         copy_sql = """
            COPY raw FROM stdin WITH CSV HEADER
@@ -89,13 +86,15 @@ class DBEngine:
         # pass a list of sql commands
         cur = self.get_db_cursor()
         for command in commands:
-            try:
-                cur.execute(command)
-                self.conn.commit()
-            except (Exception, pg.DatabaseError) as error:
-                print(error)
-            finally:
-                self.close_connection()
+            if command != "":
+                try:
+                    cur.execute(command)
+                    self.conn.commit()
+                except (Exception, pg.DatabaseError) as error:
+                    print(error)
+
+        self.close_connection()
+
 
     # open a connection to a psql database, using the self.dbXX parameters
     def open_connection(self):

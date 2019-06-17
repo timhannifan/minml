@@ -7,4 +7,5 @@ class FeatureGenerator():
 
     def transform(self, data):
         click.echo(f"Starting feature generation")
+        print(len(data))
         # print(self.params)

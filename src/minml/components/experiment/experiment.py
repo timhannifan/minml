@@ -24,9 +24,10 @@ class Experiment():
         self.splits = get_date_splits(self.config['temporal_config'])
 
         random.seed(self.config.get('random_seed', 123456))
-
+        print(self.config['input_path'])
         if load_db:
             self.dbclient.run()
+
 
     def write_result(self, row):
         with open(self.config['output_path'], 'w', newline='') as f:
@@ -47,17 +48,17 @@ class Experiment():
             test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
 
             # Features generated on training only
-            rich_train = self.feature_gen.transform(train_x)
+            rich_train_x = self.feature_gen.transform(train_x)
 
-            # Iterate through config models
-            for sk_model, param_dict in model_config.items():
-                click.echo(
-                    "\nStarting model: %s on end %s with" % (sk_model, tr_e))
-                param_combinations = list(ParameterGrid(param_dict))
+            # # Iterate through config models
+            # for sk_model, param_dict in model_config.items():
+            #     click.echo(
+            #         "\nStarting model: %s on end %s with" % (sk_model, tr_e))
+            #     param_combinations = list(ParameterGrid(param_dict))
 
-                # For this model, iterate through parameter combinations
-                for params in param_combinations:
-                    self.fitter.train(sk_model, params, train_x, train_y)
+            #     # For this model, iterate through parameter combinations
+            #     for params in param_combinations:
+            #         self.fitter.train(sk_model, params, rich_train_x, train_y)
 
         click.echo(f"Experiment finished")
 
