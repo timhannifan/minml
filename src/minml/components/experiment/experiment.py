@@ -21,23 +21,12 @@ class Experiment():
                   self.config['input_path'])
         self.feature_gen = FeatureGenerator(self.config['feature_generation'])
         self.fitter = ModelFitter()
+        self.splits = get_date_splits(self.config['temporal_config'])
 
         random.seed(self.config.get('random_seed', 123456))
 
         if load_db:
             self.dbclient.run()
-
-        self.initialize_components()
-
-
-    def initialize_components(self):
-        click.echo(f"Initializing components")
-
-        self.splits = get_date_splits(self.config['temporal_config'])
-
-        if self.load_db:
-            self.generate_db()
-
 
     def write_result(self, row):
         with open(self.config['output_path'], 'w', newline='') as f:
