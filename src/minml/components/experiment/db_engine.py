@@ -1,6 +1,7 @@
 import click
 import psycopg2 as pg
 import csv
+import numpy as np
 
 class DBEngine:
     def __init__(self, project_path, data_file_path):
@@ -29,9 +30,14 @@ class DBEngine:
 
         cur.execute(cmd)
         results = cur.fetchall()
+
+        arr = np.array(results)
+        x = arr[:, 1:-2]
+        y = arr[:,-1]
+
         self.close_connection()
 
-        return results
+        return (x, y)
 
     # Create any tables needed by this Client. Drop table if exists first.
     def create_tables(self):

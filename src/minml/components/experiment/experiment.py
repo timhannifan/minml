@@ -54,11 +54,11 @@ class Experiment():
             click.echo("\nStarting split: %s of %s" % (i, len(splits)))
             tr_s, tr_e, te_s, te_e = split
 
-            train = self.dbclient.fetch_data(tr_s, tr_e)
-            test = self.dbclient.fetch_data(tr_s, tr_e)
+            train_x, train_y = self.dbclient.fetch_data(tr_s, tr_e)
+            test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
 
             # Features generated on training only
-            rich_train = self.feature_gen.transform(train)
+            rich_train = self.feature_gen.transform(train_x)
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
@@ -67,8 +67,8 @@ class Experiment():
                 param_combinations = list(ParameterGrid(param_dict))
 
                 # For this model, iterate through parameter combinations
-                for combo in param_combinations:
-                    self.fitter.fit(sk_model, combo, train, test)
+                for params in param_combinations:
+                    self.fitter.train(sk_model, params, train_x, train_y)
 
         click.echo(f"Experiment finished")
 
