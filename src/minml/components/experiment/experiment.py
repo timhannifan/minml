@@ -56,6 +56,7 @@ class Experiment():
         where k is the percentage of population at the highest probabilities to
         be classified as "positive". Label those with predicted probabilities
         higher than (1- k/100) quantile as positive, and evaluate the precision.
+        Orginally written by https://github.com/KunyuHe/ML-Pipeline-for-Crowdfunding-Project-Outcome-Prediction/blob/master/codes/train.py
         Inputs:
             - probs (array): predicted probabilities on the validation
                 set.
@@ -116,6 +117,7 @@ class Experiment():
         probabilities for each observation. For classifiers that cannot
         provide predicted probabilities, get its standardized decision
         function.
+        Orginally written by https://github.com/KunyuHe/ML-Pipeline-for-Crowdfunding-Project-Outcome-Prediction/blob/master/codes/train.py
         Returns:
             (array of floats) predicted probabilities
         """
