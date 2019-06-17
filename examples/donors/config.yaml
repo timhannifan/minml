@@ -24,26 +24,27 @@ model_config:
     # 'sklearn.dummy.DummyClassifier':
     #     strategy: [most_frequent]
     'sklearn.ensemble.ExtraTreesClassifier':
-        n_estimators: [5]
+        n_estimators: [3]
         criterion: [entropy]
-        max_depth: [1,2,~]
-        min_samples_split: [2,5]
+        max_depth: [2]
+        min_samples_split: [2]
 
 scoring:
   testing_metric_groups:
     -
       metrics: ['precision@', 'recall@']
       thresholds:
-        percentiles: [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
-        top_n: [10, 25]
+        percentiles: [10.0]
+        # percentiles: [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
+        top_n: [10]
   training_metric_groups:
     -
       metrics: ['accuracy']
     -
       metrics: ['precision@', 'recall@']
       thresholds:
-        percentiles: [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
-        top_n: [10, 25]
+        percentiles: [1.0, 10.0, 50.0]
+        top_n: [10]
 
 feature_generation:
     -
