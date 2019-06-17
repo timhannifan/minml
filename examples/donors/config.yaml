@@ -32,7 +32,7 @@ model_config:
 scoring:
   testing_metric_groups:
     -
-      metrics: ['precision@', 'recall@']
+      metrics: ['precision', 'recall']
       thresholds:
         percentiles: [10.0]
         # percentiles: [1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0]
@@ -41,7 +41,7 @@ scoring:
     -
       metrics: ['accuracy']
     -
-      metrics: ['precision@', 'recall@']
+      metrics: ['precision', 'recall']
       thresholds:
         percentiles: [1.0, 10.0, 50.0]
         top_n: [10]
