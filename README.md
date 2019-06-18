@@ -45,9 +45,7 @@ Results from model/parameter/threshold/time-split analysis are stored in a Postg
 #### Visualizations
 Precision/recall graphs vs population thresholds for the best performing models in each split are exported to a directory specified in the config. Visualizations can also be disabled in the config.
 
-Example:
-![Postgres](https://github.com/timhannifan/minml/blob/master/examples/donors/visualization/precision_recall/sklearn.linear_model.LogisticRegression:%20%7B'C':%200.01%2C%20'n_jobs':%20-1%2C%20'penalty':%20'l2'%2C%20'solver':%20'sag'%7D.png)
-
+![Example:](https://github.com/timhannifan/minml/blob/master/examples/donors/visualization/precision_recall/sklearn.linear_model.LogisticRegression:%20%7B'C':%200.01%2C%20'n_jobs':%20-1%2C%20'penalty':%20'l2'%2C%20'solver':%20'sag'%7D.png)
 
 
 Work is underway for further post-modeling evaluation and parameter tuning.
