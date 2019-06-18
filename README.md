@@ -36,9 +36,18 @@ The project directory should contain all the files listed in the example directo
 
 To run a custom experiment with new data, one would need to replace the code within each file prefixed with `config_` in the project directory. The SQL files define the Experiment schemas, and field-specific information for indexing, cleaning, inserting, and defining semantic entities/events.
 
-### Results
+### Experiment Results
+#### Postgres Table
 Results from model/parameter/threshold/time-split analysis are stored in a Postgres table named 'results'. A sample of the `best_model.sql` output is shown below.
 
 ![Postgres](https://github.com/timhannifan/minml/blob/master/examples/donors/img/results.png)
 
-Work is underway for post-modeling evaluation and parameter tuning.
+#### Visualizations
+Precision/recall graphs vs population thresholds for the best performing models in each split are exported to a directory specified in the config. Visualizations can also be disabled in the config.
+
+Example:
+![Postgres](https://github.com/timhannifan/minml/blob/master/examples/donors/visualization/precision_recall/sklearn.linear_model.LogisticRegression:%20%7B'C':%200.01%2C%20'n_jobs':%20-1%2C%20'penalty':%20'l2'%2C%20'solver':%20'sag'%7D.png)
+
+
+
+Work is underway for further post-modeling evaluation and parameter tuning.
