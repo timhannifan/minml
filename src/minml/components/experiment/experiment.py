@@ -28,7 +28,6 @@ class Experiment():
                   self.config['input_path'], self.db_config)
         self.feature_gen = FeatureGenerator(self.config['feature_generation'])
         self.splits = get_date_splits(self.config['temporal_config'])
-        print(self.splits)
 
         random.seed(self.config.get('random_seed', 123456))
 
@@ -185,12 +184,12 @@ class Experiment():
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
                     evl = self.evaluate(clf,
-                                data,
-                                y_hats,
-                                probs,
-                                split,
-                                sk_model,
-                                params)
+                                        data,
+                                        y_hats,
+                                        probs,
+                                        split,
+                                        sk_model,
+                                        params)
 
                     curr_prec = evl[0][8]
 
