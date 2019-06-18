@@ -8,6 +8,7 @@ import statistics
 from .db_engine import DBEngine
 from .time_utils import get_date_splits
 from components.generator.features import FeatureGenerator
+from components.visualization import plot_precision_recall
 
 import numpy as np
 from sklearn.model_selection import ParameterGrid
@@ -46,6 +47,19 @@ class Experiment():
         with open(self.config['output_path'], "a+", newline='') as f:
             f.write(strings+'\n')
 
+
+    def plot_pr(self, data):
+        """
+        Generates precision/recall graphs
+
+        Inputs:
+            - data (tuple): paramaters for visualisation. see params below
+        Returns:
+            Nothing
+        """
+        if self.config['generate_graphs']:
+            y_true, y_score, baseline, dir_path, title = data
+            plot_precision_recall(y_true, y_score, baseline, dir_path, title)
 
 
     def metrics_at_k(self, k, test_y, probs, metric_name):
@@ -98,16 +112,21 @@ class Experiment():
 
                             report = [tr_s, tr_e, te_s, te_e, sk_model,
                                       params, m, k, m_at_k]
-
+                            train_info = (test_y,
+                                probs,
+                                0.3,
+                                self.config['viz_path'],
+                                "%s: %s" % (sk_model, str(params))
+                                )
                             if m == 'precision':
                                 if best_at_k == 0:
                                     best_at_k = m_at_k
-                                    best.append(report)
+                                    best.append((report, train_info))
                                 elif m_at_k == best_at_k:
-                                    best.append(report)
+                                    best.append((report, train_info))
                                 elif m_at_k > best_at_k:
                                     best_at_k = m_at_k
-                                    best = [report]
+                                    best = [(report, train_info)]
                             # writes to results table
                             self.dbclient.write_result(report)
                             # writes to results.csv
@@ -122,6 +141,8 @@ class Experiment():
             # else:
             #     print('no thresholds', metric)
             #     pass
+
+
         return best
 
     def get_predicted_probabilities(self, clf, test_x):
@@ -191,17 +212,22 @@ class Experiment():
                                         sk_model,
                                         params)
 
-                    curr_prec = evl[0][8]
+                    curr_prec = evl[0][0][8]
 
                     if split_best_prec == 0:
                         split_best_prec = curr_prec
-                        split_best_models.append(evl)
+                        for m in evl:
+                            split_best_models.append(m)
                     elif curr_prec == split_best_prec:
-                        split_best_models.append(evl)
+                        for m in evl:
+                            split_best_models.append(m)
                     elif curr_prec > split_best_prec:
                         split_best_prec = curr_prec
-                        split_best_models = [evl]
+                        split_best_models = evl
 
-            print('split_best', split_best_models)
+            # Generate graphs for the best models in the split
+            for model in split_best_models:
+                report, train_info = model
+                self.plot_pr(train_info)
         click.echo(f"Experiment finished")
 

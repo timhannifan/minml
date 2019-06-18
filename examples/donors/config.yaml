@@ -2,6 +2,8 @@ model_comment: 'donors choose example'
 input_path: "../../examples/donors/data_small.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
+viz_path: "../../examples/donors/visualization/"
+generate_graphs: True
 
 random_seed: 23895478
 
