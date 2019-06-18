@@ -2,6 +2,11 @@ import click
 import psycopg2 as pg
 import csv
 import pandas as pd
+import json
+
+
+RESULTS_FIELDS = 'train_start,train_end,test_start,test_end,model_name,params,metric,threshold,metric_value'
+
 
 class DBEngine:
     def __init__(self, project_path, data_file_path, db_config):
@@ -44,14 +49,14 @@ class DBEngine:
     def create_tables(self):
         click.echo(f"Creating tables")
         dc_commands = get_sql_contents(self.drop_and_create_sql)
-        self.execute_sql(dc_commands)
+        self._execute_sql(dc_commands)
 
 
     # Add at least two indexes to the tables to improve analytic queries.
     def add_indices(self):
         click.echo(f"Adding Indexes")
         index_commands = get_sql_contents(self.index_sql)
-        self.execute_sql(index_commands)
+        self._execute_sql(index_commands)
 
 
     # This function will bulk load the data using copy
@@ -68,22 +73,43 @@ class DBEngine:
             reader = csv.reader(f, delimiter=',')
             cur.copy_expert(sql=copy_sql, file=f)
             insert_commands = get_sql_contents(self.insert_sql)
-            self.execute_sql(insert_commands)
+            self._execute_sql(insert_commands)
 
         self.close_connection()
 
 
+    def write_result(self, row):
+        """
+        Writes a row from model evaluation to the results table
+        Inputs:
+            - row (list): list of results row vals. see db_create.sql schema
+        Returns:
+            Nothing
+        """
+        write_row = []
+        for el in row:
+            if type(el) == dict:
+                write_row.append(json.dumps(el))
+            else:
+                write_row.append(str(el))
+
+        cur = self.get_db_cursor()
+        cmd = 'INSERT INTO results'+ \
+              ' (%s) VALUES %s ON CONFLICT DO NOTHING;' % (RESULTS_FIELDS,
+                                                           tuple(write_row))
+        self._execute_sql([cmd])
+
     def clean_raw(self):
         commands = get_sql_contents(self.clean_sql)
-        self.execute_sql(commands)
+        self._execute_sql(commands)
 
 
     def generate_events_entities(self):
         commands = get_sql_contents(self.semantic_sql)
-        self.execute_sql(commands)
+        self._execute_sql(commands)
 
 
-    def execute_sql(self, commands):
+    def _execute_sql(self, commands):
         # pass a list of sql commands
         cur = self.get_db_cursor()
         for command in commands:

@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS raw CASCADE;
 DROP TABLE IF EXISTS raw_projects CASCADE;
+DROP TABLE IF EXISTS results CASCADE;
 
 CREATE TABLE raw (
     projectid VARCHAR(50) PRIMARY KEY UNIQUE,
@@ -57,4 +58,16 @@ CREATE TABLE raw_projects (
     -- eligible_double_your_impact_match VARCHAR(2),
     date_posted TIMESTAMP,
     datefullyfunded TIMESTAMP
+    );
+
+CREATE TABLE results (
+    train_start TIMESTAMP,
+    train_end TIMESTAMP,
+    test_start TIMESTAMP,
+    test_end TIMESTAMP,
+    model_name VARCHAR,
+    params JSONB,
+    metric VARCHAR,
+    threshold DECIMAL,
+    metric_value DECIMAL
     );

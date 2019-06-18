@@ -11,15 +11,13 @@ from components.generator.features import FeatureGenerator
 
 import numpy as np
 from sklearn.model_selection import ParameterGrid
-
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score, roc_auc_score)
 
 import warnings
-from sklearn.exceptions import DataConversionWarning
+from sklearn.exceptions import (DataConversionWarning, ConvergenceWarning)
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
-
-import pandas as pd
+warnings.filterwarnings(action='ignore', category=ConvergenceWarning)
 
 class Experiment():
     def __init__(self, experiment_config, db_config, load_db):
@@ -44,11 +42,11 @@ class Experiment():
 
 
     def write_result(self, row):
+        strings = ','.join([str(x) for x in row])
+
         with open(self.config['output_path'], "a+", newline='') as f:
-            # fmanager = csv.writer(f, delimiter=' ',
-            #                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            f.write(','.join([str(x) for x in row])+'\n'
-                )
+            f.write(strings+'\n')
+
 
 
     def metrics_at_k(self, k, test_y, probs, metric_name):
@@ -111,9 +109,12 @@ class Experiment():
                                 elif m_at_k > best_at_k:
                                     best_at_k = m_at_k
                                     best = [report]
+                            # writes to results table
+                            self.dbclient.write_result(report)
+                            # writes to results.csv
                             self.write_result(report)
 
-        return best
+
                 # if 'top_n' in thresh:
                 #     for n in thresh['top_n']:
                 #         for m in metrics:
@@ -122,7 +123,7 @@ class Experiment():
             # else:
             #     print('no thresholds', metric)
             #     pass
-
+        return best
 
     def get_predicted_probabilities(self, clf, test_x):
         """
@@ -134,7 +135,6 @@ class Experiment():
         Returns:
             (array of floats) predicted probabilities
         """
-        print('running get_predicted_probabilities')
         if hasattr(clf, "predict_proba"):
             predicted_prob = clf.predict_proba(test_x)[:, 1]
         else:
@@ -144,8 +144,6 @@ class Experiment():
         return predicted_prob
 
     def train(self, sk_model, params, data):
-        click.echo("Starting model fit on %s" % (sk_model))
-
         rich_train_x, train_y, rich_test_x, test_y = data
 
         module_name, class_name = sk_model.rsplit(".", 1)
@@ -177,6 +175,7 @@ class Experiment():
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
+                click.echo("Starting model: %s" % (sk_model))
                 param_combinations = list(ParameterGrid(param_dict))
 
                 # For this model, iterate through parameter combinations
@@ -203,6 +202,7 @@ class Experiment():
                     elif curr_prec > split_best_prec:
                         split_best_prec = curr_prec
                         split_best_models = [evl]
+
             print('split_best', split_best_models)
         click.echo(f"Experiment finished")
 
