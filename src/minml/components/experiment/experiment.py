@@ -85,15 +85,16 @@ class Experiment():
         tr_s, tr_e, te_s, te_e = split
         testing_metric_list = score_config['testing_metric_groups']
 
+        best_at_k = 0.0
+        best = []
         for metric_dict in testing_metric_list:
             # E.g. precision@, recall@
             metrics = metric_dict['metrics']
 
             if 'thresholds' in metric_dict:
                 thresh = metric_dict['thresholds']
-
-
                 if 'percentiles' in thresh:
+
                     for k in thresh['percentiles']:
                         for m in metrics:
                             m_at_k = self.metrics_at_k(k, test_y, probs, m)
@@ -101,15 +102,26 @@ class Experiment():
                             report = [tr_s, tr_e, te_s, te_e, sk_model,
                                       params, m, k, m_at_k]
 
+                            if m == 'precision':
+                                if best_at_k == 0:
+                                    best_at_k = m_at_k
+                                    best.append(report)
+                                elif m_at_k == best_at_k:
+                                    best.append(report)
+                                elif m_at_k > best_at_k:
+                                    best_at_k = m_at_k
+                                    best = [report]
                             self.write_result(report)
+
+        return best
                 # if 'top_n' in thresh:
                 #     for n in thresh['top_n']:
                 #         for m in metrics:
                 #             pass
 
-            else:
-                print('no thresholds', metric)
-                pass
+            # else:
+            #     print('no thresholds', metric)
+            #     pass
 
 
     def get_predicted_probabilities(self, clf, test_x):
@@ -151,16 +163,18 @@ class Experiment():
         for i, split in enumerate(splits):
             click.echo("\nStarting split: %s of %s" % (i, len(splits)))
             tr_s, tr_e, te_s, te_e = split
+            split_best_prec = 0.0
+            split_best_models = []
 
             train_x, train_y = self.dbclient.fetch_data(tr_s, tr_e)
             test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
-
 
             # Running feature transformations on train/test x data
             rich_train_x = self.feature_gen.transform(train_x)
             rich_test_x = self.feature_gen.transform(test_x)
 
             data = (rich_train_x, train_y, rich_test_x, test_y)
+
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
                 param_combinations = list(ParameterGrid(param_dict))
@@ -171,7 +185,7 @@ class Experiment():
 
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
-                    self.evaluate(clf,
+                    evl = self.evaluate(clf,
                                 data,
                                 y_hats,
                                 probs,
@@ -179,5 +193,16 @@ class Experiment():
                                 sk_model,
                                 params)
 
+                    curr_prec = evl[0][8]
+
+                    if split_best_prec == 0:
+                        split_best_prec = curr_prec
+                        split_best_models.append(evl)
+                    elif curr_prec == split_best_prec:
+                        split_best_models.append(evl)
+                    elif curr_prec > split_best_prec:
+                        split_best_prec = curr_prec
+                        split_best_models = [evl]
+            print('split_best', split_best_models)
         click.echo(f"Experiment finished")
 
