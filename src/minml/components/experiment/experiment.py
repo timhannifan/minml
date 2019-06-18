@@ -30,6 +30,7 @@ class Experiment():
                   self.config['input_path'], self.db_config)
         self.feature_gen = FeatureGenerator(self.config['feature_generation'])
         self.splits = get_date_splits(self.config['temporal_config'])
+        print(self.splits)
 
         random.seed(self.config.get('random_seed', 123456))
 

@@ -1,19 +1,19 @@
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 def get_date_splits(config):
-    # start time of our data
+    # start time of our data (yyyy-mm-dd)
     start_time = config['start_time']
-
-    #last date of data including labels and outcomes that we have
+    #last date of data including labels and outcomes that we have (yyyy-mm-dd)
     end_time = config['end_time']
-
-    #how far out do we want to predict (let's say in months for now)
+    #how far out do we want to predict (months)
     prediction_windows = config['prediction_windows']
-
-    #how often is this prediction being made? every day? every month? once a year?
+    #how often is this prediction being made? every day? every month? once a year? (months)
     model_update_frequency = config['model_update_frequency']
-
-    from datetime import date, datetime, timedelta
-    from dateutil.relativedelta import relativedelta
+    #how long is the gap between the end of the training data and start of test, where the outcome is unknown? (days)
+    unknown_outcome_gap = config['unknown_outcome_gap']
+    # over what length of time should we calculate aggregations
+    aggregation_lengths = config['aggregation_lengths']
 
     start_time_date = datetime.strptime(start_time, '%Y-%m-%d')
     end_time_date = datetime.strptime(end_time, '%Y-%m-%d')
@@ -23,7 +23,7 @@ def get_date_splits(config):
         test_end_time = end_time_date
         while (test_end_time >= start_time_date + 2 * relativedelta(months=+prediction_window)):
             test_start_time = test_end_time - relativedelta(months=+prediction_window)
-            train_end_time = test_start_time  - relativedelta(days=+1) # minus 1 day
+            train_end_time = test_start_time  - relativedelta(days=+unknown_outcome_gap)
 
             res.append((train_start_time,train_end_time,test_start_time,test_end_time))
             test_end_time -= relativedelta(months=+model_update_frequency)
