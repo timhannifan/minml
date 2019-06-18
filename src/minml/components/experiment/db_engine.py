@@ -17,11 +17,11 @@ class DBEngine:
         self.dbpasswd = db_config['pass']
         self.conn = None
         self.project_path = project_path
-        self.clean_sql = self.project_path + 'db_clean.sql'
-        self.semantic_sql = self.project_path + 'db_semantic.sql'
-        self.insert_sql = self.project_path + 'db_insert.sql'
-        self.drop_and_create_sql = self.project_path + 'db_create.sql'
-        self.index_sql = self.project_path + 'db_index.sql'
+        self.clean_sql = self.project_path + 'config_db_clean.sql'
+        self.semantic_sql = self.project_path + 'config_db_semantic.sql'
+        self.insert_sql = self.project_path + 'config_db_insert.sql'
+        self.drop_and_create_sql = self.project_path + 'config_db_create.sql'
+        self.index_sql = self.project_path + 'config_db_index.sql'
         self.data_path = data_file_path
 
     def fetch_data(self, start, end):
