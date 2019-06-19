@@ -1,43 +1,35 @@
 import click
-
-
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import OrdinalEncoder, StandardScaler, OneHotEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
-numeric_features = ['price']
-
-
-from numpy import array
-from numpy import reshape
-# numeric_steps = [
-#     ('imputer', SimpleImputer(strategy='median')),
-#     ('scaler', StandardScaler())]
-
-# numeric_transformer =
-ct = ColumnTransformer(
-    transformers=[
-        # ('imputer', SimpleImputer(strategy='median'), numeric_features),
-        ('scaler', StandardScaler(copy=True, with_mean=True, with_std=True), numeric_features)])
-        # ('cat', categorical_transformer, categorical_features)])
+import numpy as np
+import pandas as pd
 
 scaler = StandardScaler(copy=False, with_mean=False, with_std=True)
 
 class FeatureGenerator():
-    def __init__(self, params):
-        self.params = params
+    def __init__(self, feature_config):
+        self.feature_config = feature_config
 
 
     def transform(self, df):
         click.echo(f"Starting feature generation")
 
-        arr = array(df['price'])
-        data = arr.reshape((arr.shape[0], 1))
-        scaler.fit(data)
-        df['price'] = scaler.transform(data)
-
+        print('before', df.shape)
+        for task in self.feature_config:
+            for task_type, target_list in task.items():
+                if task_type == 'categoricals':
+                    print('before_cat', df.shape)
+                    df = self.process_cat(target_list, df)
+                    print('after_cat', df.shape)
+                elif task_type == 'numeric':
+                    df = self.process_num(target_list, df)
+                elif task_type == 'binary':
+                    df = self.process_bin(target_list, df)
+        print('after', df.shape)
         return df
 
         # ct.fit_transform(df)
@@ -58,10 +50,55 @@ class FeatureGenerator():
 
         #             choices_sql = df[col_target].unique()
 
+    def process_cat(self, target_list, df):
+        print('processing categoricals')
+        for col in target_list:
+            col_name = col['column']
+            df.drop(col_name, axis=1)
+            df = pd.concat([df,
+                            pd.get_dummies(df[col_name], prefix=col_name)],
+                            axis=1)
+        return df
+
+
+
+    def scale_numeric_col(self, df, col_name):
+        print('scale_numeric_col: ', col_name)
+        arr = np.array(df[col_name])
+        reshaped = arr.reshape((arr.shape[0], 1))
+        scaler.fit(reshaped)
+        df[col_name] = scaler.transform(reshaped)
+
+        return df
+
+
+
+    def process_num(self, target_list, df):
+        print('processing numerics')
+        for col in target_list:
+            col_name = col['column']
+            impute_dict = col['imputation']
+            metrics_list = col['metrics']
+            scale_after = col['scale']
+
+            print('doing feature stuff on ', col_name)
+
+            if scale_after == True:
+                self.scale_numeric_col(df, col_name)
+
+        return df
 
 
 
 
+# numeric_steps = [
+#     ('imputer', SimpleImputer(strategy='median')),
+#     ('scaler', StandardScaler())]
 
+# numeric_transformer =
 
-
+# ct = ColumnTransformer(
+#     transformers=[
+#         # ('imputer', SimpleImputer(strategy='median'), numeric_features),
+#         ('scaler', StandardScaler(copy=True, with_mean=True, with_std=True), numeric_features)])
+#         # ('cat', categorical_transformer, categorical_features)])

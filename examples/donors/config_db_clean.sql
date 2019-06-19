@@ -6,9 +6,9 @@ create table cleaned.projects as (
         select
             projectid::varchar as event_id,
             teacher_acctid::varchar as entity_id,
-            replace(regexp_replace(btrim(lower(school_city)), '\s{2,}|,|\.',''), $$'$$,'') as city,
+            btrim(replace(regexp_replace(btrim(lower(school_city)), '\s{2,}|,|\.',''), $$'$$,'')) as city,
                 btrim(lower(school_state)) as state,
-                replace(regexp_replace(btrim(lower(school_county)), '\s{2,}|,|\.',''), $$'$$,'') as county,
+                btrim(replace(regexp_replace(btrim(lower(school_county)), '\s{2,}|,|\.',''), $$'$$,'')) as county,
                 case when
                     primary_focus_subject is null then 'unknown'
                     else btrim(lower(primary_focus_subject))
@@ -17,7 +17,7 @@ create table cleaned.projects as (
                     resource_type is null then 'other'
                     else btrim(lower(resource_type))
                 end as type,
-                replace(regexp_replace(btrim(lower(poverty_level)), 'poverty',''), $$'$$,'') as poverty,
+                btrim(replace(regexp_replace(btrim(lower(poverty_level)), 'poverty',''), $$'$$,'')) as poverty,
                 case
                     when grade_level = 'Grades 3-5' then 'primary'
                     when grade_level = 'Grades PreK-2' then 'pre'
@@ -28,6 +28,19 @@ create table cleaned.projects as (
                 total_price_including_optional_support::decimal as price,
                 students_reached::integer as reach,
                 date_posted::timestamp as date,
+                case
+                    when school_magnet = 't' then 1
+                    else 0
+                end as school_magnet,
+                case
+                    when school_charter = 't' then 1
+                    else 0
+                end as school_charter,
+                case
+                    when eligible_double_your_impact_match = 't' then 1
+                    else 0
+                end as eligible_double_your_impact_match,
+
                 case
                     when DATE_PART('day', datefullyfunded - date_posted) > 60 then 1
                     else 0

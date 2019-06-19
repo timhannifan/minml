@@ -36,11 +36,11 @@ class DBEngine:
         cur.execute(cmd)
         results = cur.fetchall()
         column_names = [desc[0] for desc in cur.description]
-        arr = pd.DataFrame(results, columns=column_names)
+        df = pd.DataFrame(results, columns=column_names)
 
         # TODO: fix columns
-        x = arr.iloc[:,-4:-3]
-        y = arr.iloc[:,-1]
+        x = df.drop('result', axis=1)
+        y = df.iloc[:,-1]
 
         self.close_connection()
         return (x, y)

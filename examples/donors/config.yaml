@@ -28,8 +28,8 @@ model_config:
         min_samples_split: [0.05, 0.1 ]
         max_depth: [1,5,10]
     'sklearn.svm.LinearSVC':
-        penalty: [l2]
-        C: [0.01, 0.1, 1.0]
+        penalty: [l1,l2]
+        C: [0.01,0.1,1.0,10.0]
     'sklearn.linear_model.LogisticRegression':
         penalty: [l2]
         C: [0.01, 0.1, 1.0]
@@ -69,9 +69,16 @@ feature_generation:
         categoricals:
             -
                 column: 'poverty'
+            -
+                column: 'grade'
+    -
+        numeric:
+            -
+                column: 'price'
                 imputation:
                     sum:
                         type: 'null_category'
                     choice_query: 'select distinct poverty from semantic.entities'
                 metrics:
                     - 'sum'
+                scale: True

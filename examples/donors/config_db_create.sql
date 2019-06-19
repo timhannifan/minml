@@ -43,8 +43,8 @@ CREATE TABLE raw_projects (
     -- school_metro VARCHAR(50),
     -- school_district VARCHAR(200),
     school_county VARCHAR(50),
-    -- school_charter VARCHAR(50),
-    -- school_magnet VARCHAR(50),
+    school_charter VARCHAR(50),
+    school_magnet VARCHAR(50),
     -- teacher_prefix VARCHAR(50),
     primary_focus_subject VARCHAR(50),
     -- primary_focus_area VARCHAR(50),
@@ -55,7 +55,7 @@ CREATE TABLE raw_projects (
     grade_level VARCHAR(50),
     total_price_including_optional_support DECIMAL,
     students_reached INT,
-    -- eligible_double_your_impact_match VARCHAR(2),
+    eligible_double_your_impact_match VARCHAR,
     date_posted TIMESTAMP,
     datefullyfunded TIMESTAMP
     );
