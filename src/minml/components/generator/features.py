@@ -18,7 +18,7 @@ class FeatureGenerator():
     def transform(self, df):
         click.echo(f"Starting feature generation")
 
-        print('before', df.shape)
+        # print('before', df.shape)
         for task in self.feature_config:
             for task_type, target_list in task.items():
                 if task_type == 'categoricals':
@@ -29,7 +29,7 @@ class FeatureGenerator():
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
                     df = self.process_bin(target_list, df)
-        print('after', df.shape)
+        # print('after', df.shape)
         df.drop(['entity_id','city','state','county','primary_subject',
             'start_time', 'end_time','date','school_charter','eligible_double_your_impact_match','reach'], axis=1,inplace=True)
         return df

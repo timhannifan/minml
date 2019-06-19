@@ -11,6 +11,7 @@ from components.generator.features import FeatureGenerator
 from components.visualization import plot_precision_recall
 
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score, roc_auc_score)
@@ -189,12 +190,29 @@ class Experiment():
             test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
 
             # Running feature transformations on train/test x data
-            rich_train_x = self.feature_gen.transform(train_x)
-            rich_test_x = self.feature_gen.transform(test_x)
 
-            for col in rich_train_x.columns:
-                print(col)
-                print(len(rich_train_x[col].isna()))
+            #Temporarily concat train/test to run through featuregen
+            train_x['temp_label'] = 'train'
+            test_x['temp_label'] = 'test'
+            concat_df = pd.concat([train_x , test_x])
+            features_df = self.feature_gen.transform(concat_df)
+
+            # Split back to train/test
+            rich_train_x = features_df[features_df['temp_label'] == 'train']
+            rich_test_x = features_df[features_df['temp_label'] == 'test']
+
+            # Drop temp label
+            rich_train_x = rich_train_x.drop('temp_label', axis=1)
+            rich_test_x = rich_test_x.drop('temp_label', axis=1)
+
+
+            # rich_train_x = self.feature_gen.transform(train_x)
+            # rich_test_x = self.feature_gen.transform(test_x)
+            # print(rich_train_x.columns)
+            # print(rich_test_x.columns)
+            # for col in rich_train_x.columns:
+                # print(col)
+                # print(len(rich_train_x[col].isna()))
 
             data = (rich_train_x, train_y, rich_test_x, test_y)
 
