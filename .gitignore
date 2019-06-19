@@ -8,4 +8,4 @@ dist/*
 build/*
 *.txt
 *results.csv
-examples/donors/visualization/precision_recall*
+examples/donors/visualization/*
