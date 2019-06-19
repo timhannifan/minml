@@ -29,28 +29,10 @@ class FeatureGenerator():
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
                     df = self.process_bin(target_list, df)
-        # print('after', df.shape)
-        df.drop(['entity_id','city','state','county','primary_subject',
-            'start_time', 'end_time','date','school_charter','eligible_double_your_impact_match','reach'], axis=1,inplace=True)
+                elif task_type == 'drop':
+                    df.drop(target_list, axis=1,inplace=True)
+
         return df
-
-        # ct.fit_transform(df)
-        # print(df['price'].mean())
-        # for col in numeric_features:
-
-        # for transf_type in self.params:
-        #     for t_type, type_params in transf_type.items():
-        #         print(t_type)
-        #         for some_dict in type_params:
-
-        #             col_target = some_dict['column']
-        #             imp_dict = some_dict['imputation']
-        #             strategy = some_dict['metrics']
-        #             print('column', col_target)
-        #             print('imputation dict', imp_dict)
-        #             print('strategy',strategy)
-
-        #             choices_sql = df[col_target].unique()
 
     def process_cat(self, target_list, df):
         print('processing categoricals')
