@@ -190,45 +190,49 @@ class Experiment():
 
             # Running feature transformations on train/test x data
             rich_train_x = self.feature_gen.transform(train_x)
-            # rich_test_x = self.feature_gen.transform(test_x)
+            rich_test_x = self.feature_gen.transform(test_x)
 
-            # data = (rich_train_x, train_y, rich_test_x, test_y)
+            for col in rich_train_x.columns:
+                print(col)
+                print(len(rich_train_x[col].isna()))
 
-            # # Iterate through config models
-            # for sk_model, param_dict in model_config.items():
-            #     click.echo("Starting model: %s" % (sk_model))
-            #     param_combinations = list(ParameterGrid(param_dict))
+            data = (rich_train_x, train_y, rich_test_x, test_y)
 
-            #     # For this model, iterate through parameter combinations
-            #     for params in param_combinations:
-            #         clf = self.train(sk_model, params, data)
+            # Iterate through config models
+            for sk_model, param_dict in model_config.items():
+                click.echo("Starting model: %s" % (sk_model))
+                param_combinations = list(ParameterGrid(param_dict))
 
-            #         y_hats = clf.predict(rich_test_x)
-            #         probs = self.get_predicted_probabilities(clf, rich_test_x)
-            #         evl = self.evaluate(clf,
-            #                             data,
-            #                             y_hats,
-            #                             probs,
-            #                             split,
-            #                             sk_model,
-            #                             params)
+                # For this model, iterate through parameter combinations
+                for params in param_combinations:
+                    clf = self.train(sk_model, params, data)
 
-            #         curr_prec = evl[0][0][8]
+                    y_hats = clf.predict(rich_test_x)
+                    probs = self.get_predicted_probabilities(clf, rich_test_x)
+                    evl = self.evaluate(clf,
+                                        data,
+                                        y_hats,
+                                        probs,
+                                        split,
+                                        sk_model,
+                                        params)
 
-            #         if split_best_prec == 0:
-            #             split_best_prec = curr_prec
-            #             for m in evl:
-            #                 split_best_models.append(m)
-            #         elif curr_prec == split_best_prec:
-            #             for m in evl:
-            #                 split_best_models.append(m)
-            #         elif curr_prec > split_best_prec:
-            #             split_best_prec = curr_prec
-            #             split_best_models = evl
+                    curr_prec = evl[0][0][8]
 
-            # # Generate graphs for the best models in the split
-            # for model in split_best_models:
-            #     report, train_info = model
-            #     self.plot_pr(train_info)
+                    if split_best_prec == 0:
+                        split_best_prec = curr_prec
+                        for m in evl:
+                            split_best_models.append(m)
+                    elif curr_prec == split_best_prec:
+                        for m in evl:
+                            split_best_models.append(m)
+                    elif curr_prec > split_best_prec:
+                        split_best_prec = curr_prec
+                        split_best_models = evl
+
+            # Generate graphs for the best models in the split
+            for model in split_best_models:
+                report, train_info = model
+                self.plot_pr(train_info)
         click.echo(f"Experiment finished")
 

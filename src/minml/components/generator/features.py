@@ -30,6 +30,8 @@ class FeatureGenerator():
                 elif task_type == 'binary':
                     df = self.process_bin(target_list, df)
         print('after', df.shape)
+        df.drop(['entity_id','city','state','county','primary_subject',
+            'start_time', 'end_time','date','school_charter','eligible_double_your_impact_match','reach'], axis=1,inplace=True)
         return df
 
         # ct.fit_transform(df)
@@ -54,10 +56,11 @@ class FeatureGenerator():
         print('processing categoricals')
         for col in target_list:
             col_name = col['column']
-            df.drop(col_name, axis=1)
+
             df = pd.concat([df,
                             pd.get_dummies(df[col_name], prefix=col_name)],
                             axis=1)
+            df.drop(col_name, axis=1, inplace=True)
         return df
 
 
