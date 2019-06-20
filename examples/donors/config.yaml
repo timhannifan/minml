@@ -3,7 +3,7 @@ input_path: "../../examples/donors/data_small.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 viz_path: "../../examples/donors/visualization/"
-generate_graphs: False
+generate_graphs: True
 
 random_seed: 23895478
 
@@ -25,62 +25,62 @@ label_config:
 
 model_config:
     ## Test
-    'sklearn.tree.DecisionTreeClassifier':
-        # min_samples_split: [0.4]
-        max_depth: [5]
-    'sklearn.svm.LinearSVC':
-        penalty: [l2]
-        C: [1.0]
-    'sklearn.linear_model.LogisticRegression':
-        penalty: [l2]
-        C: [1.0]
-        solver: [sag]
-        n_jobs: [-1]
-    'sklearn.neighbors.KNeighborsClassifier':
-        n_neighbors: [5]
-        weights: [uniform]
-        metric: ["euclidean"]
-    ## Production
     # 'sklearn.tree.DecisionTreeClassifier':
-    #     min_samples_split: [0.05, 0.1]
-    #     max_depth: [1,5,10]
+    #     # min_samples_split: [0.4]
+    #     max_depth: [5]
     # 'sklearn.svm.LinearSVC':
     #     penalty: [l2]
-    #     C: [0.01,0.1,1.0,10.0]
+    #     C: [1.0]
+    # 'sklearn.linear_model.LogisticRegression':
+    #     penalty: [l2]
+    #     C: [1.0]
+    #     solver: [sag]
+    #     n_jobs: [-1]
+    # 'sklearn.neighbors.KNeighborsClassifier':
+    #     n_neighbors: [5]
+    #     weights: [uniform]
+    #     metric: ["euclidean"]
+
+    ## Production
+    'sklearn.tree.DecisionTreeClassifier':
+        min_samples_split: [0.05, 0.1]
+        max_depth: [1,5,10]
+    'sklearn.svm.LinearSVC':
+        penalty: [l2]
+        C: [0.01,0.1,1.0,10.0]
     # 'sklearn.linear_model.LogisticRegression':
     #     penalty: [l2]
     #     C: [0.1, 1.0]
     #     solver: [sag]
     #     n_jobs: [-1]
-    # 'sklearn.ensemble.BaggingClassifier':
-    #     n_estimators: [100,200]
-    #     max_samples: [10,20]
-    # 'sklearn.ensemble.ExtraTreesClassifier':
-    #     n_estimators: [3]
-    #     criterion: [entropy]
-    #     max_depth: [5,10]
-    #     min_samples_split: [0.05, 0.1]
-    # 'sklearn.neighbors.KNeighborsClassifier':
-    #     n_neighbors: [5,10]
-    #     weights: [uniform, distance]
-    #     metric: ["euclidean", "manhattan"]
+    'sklearn.ensemble.BaggingClassifier':
+        n_estimators: [20,40]
+        max_samples: [10,20]
+    'sklearn.ensemble.ExtraTreesClassifier':
+        n_estimators: [3]
+        criterion: [entropy]
+        max_depth: [5,10]
+        min_samples_split: [0.05, 0.1]
+    'sklearn.neighbors.KNeighborsClassifier':
+        n_neighbors: [10,20,30]
+        weights: [uniform, distance]
+        metric: ["euclidean", "manhattan"]
 
 scoring:
     ## Test
+    # testing_metric_groups:
+        # -
+        #     metrics: ['precision', 'recall']
+        #     thresholds:
+        #         percentiles: [10.0,20.0]
+        #         top_n: [10]
+    ## Production
     testing_metric_groups:
         -
             metrics: ['precision', 'recall']
             thresholds:
-                percentiles: [10.0,20.0]
+                percentiles: [ 1, 2, 5, 10, 20, 30, 50]
                 top_n: [10]
-
-  ## Production
-  # testing_metric_groups:
-  #   -
-  #     metrics: ['precision', 'recall']
-  #     thresholds:
-  #       percentiles: [10.0,20.0]
-  #       top_n: [10]
   # training_metric_groups:
   #   -
   #     metrics: ['accuracy']
@@ -92,7 +92,7 @@ scoring:
 
 feature_generation:
     -
-        drop: ['entity_id','city','state','county','start_time', 'end_time','date','primary_subject', 'poverty']
+        drop: ['entity_id','city','state','county','start_time', 'end_time','date', 'poverty','school_magnet']
     -
         categoricals:
             # -
@@ -102,27 +102,27 @@ feature_generation:
             -
                 column: 'grade'
                 imputation:
-                    fill_value: 'other2'
+                    fill_value: 'other'
             -
                 column: 'type'
                 imputation:
-                    fill_value: 'other3'
-            # -
-            #     column: 'primary_subject'
-            #     imputation:
-            #         fill_value: 'other'
+                    fill_value: 'other'
+            -
+                column: 'primary_subject'
+                imputation:
+                    fill_value: 'other'
     -
         numeric:
             -
                 column: 'reach'
                 imputation:
-                    strategy: 'mean'
-                scale: True
+                    strategy: 'median'
+                scale: False
             -
                 column: 'price'
                 imputation:
-                    strategy: 'mean'
-                scale: True
+                    strategy: 'median'
+                scale: False
     -
         binary:
 
@@ -132,12 +132,12 @@ feature_generation:
                     strategy: 'constant'
                     fill_value: 0
                     missing_values: -1
-            -
-                column: 'school_magnet'
-                imputation:
-                    strategy: 'constant'
-                    fill_value: 0
-                    missing_values: -1
+            # -
+            #     column: 'school_magnet'
+            #     imputation:
+            #         strategy: 'constant'
+            #         fill_value: 0
+            #         missing_values: -1
             -
                 column: 'eligible_double_your_impact_match'
                 imputation:

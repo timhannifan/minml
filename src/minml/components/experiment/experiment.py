@@ -91,7 +91,7 @@ class Experiment():
             return skmetric(sorted_test_y, predictions_at_k)
 
 
-    def evaluate(self,clf, data, y_hats, probs, split, sk_model, params):
+    def evaluate(self,clf, data, y_hats, probs, split, sk_model, params, baseline):
         score_config = self.config['scoring']
         train_x, train_y, test_x, test_y = data
         tr_s, tr_e, te_s, te_e = split
@@ -115,7 +115,7 @@ class Experiment():
                                       params, m, k, m_at_k]
                             train_info = (test_y,
                                 probs,
-                                0.3,
+                                baseline,
                                 self.config['viz_path'],
                                 "%s: %s" % (sk_model, str(params))
                                 )
@@ -173,7 +173,10 @@ class Experiment():
         instance = cls(**params)
 
         return instance.fit(rich_train_x, train_y)
+    def get_baseline(self, train_y):
 
+        # return 0.3
+        return train_y[train_y == 1].shape[0]/train_y.shape[0]
 
     def run(self):
         print('RUN')
@@ -220,13 +223,15 @@ class Experiment():
                     clf = self.train(sk_model, params, data)
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
+                    baseline = self.get_baseline(train_y)
                     evl = self.evaluate(clf,
                                         data,
                                         y_hats,
                                         probs,
                                         split,
                                         sk_model,
-                                        params)
+                                        params,
+                                        baseline)
 
                     curr_prec = evl[0][0][8]
 
