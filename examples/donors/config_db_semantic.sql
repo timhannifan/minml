@@ -29,6 +29,7 @@ create table semantic.events as (
                 type,
                 price,
                 school_charter,
+                school_magnet,
                 reach,
                 eligible_double_your_impact_match,
                 date,
@@ -39,7 +40,7 @@ create table semantic.events as (
             order by
             date asc
     )
-    select et.*, ev.type, ev.price, ev.reach, ev.date, ev.result, ev.eligible_double_your_impact_match,ev.school_charter
+    select et.*, ev.type, ev.price, ev.reach, ev.date, ev.result, ev.eligible_double_your_impact_match,ev.school_charter,ev.school_magnet
     from semantic.entities et
     inner join events ev on et.entity_id = ev.entity_id
 );

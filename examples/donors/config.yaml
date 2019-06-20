@@ -26,8 +26,8 @@ label_config:
 model_config:
     ## Test
     'sklearn.tree.DecisionTreeClassifier':
-        min_samples_split: [0.5]
-        max_depth: [2]
+        # min_samples_split: [0.4]
+        max_depth: [5]
     'sklearn.svm.LinearSVC':
         penalty: [l2]
         C: [1.0]
@@ -92,40 +92,54 @@ scoring:
 
 feature_generation:
     -
-        drop: ['entity_id','city','state','county',
-                            'primary_subject','start_time', 'end_time',
-                            'date',
-                            'eligible_double_your_impact_match']
+        drop: ['entity_id','city','state','county','start_time', 'end_time','date','primary_subject', 'poverty']
     -
         categoricals:
-            -
-                column: 'poverty'
+            # -
+            #     column: 'poverty'
+            #     imputation:
+            #         fill_value: 'other1'
             -
                 column: 'grade'
+                imputation:
+                    fill_value: 'other2'
             -
                 column: 'type'
+                imputation:
+                    fill_value: 'other3'
+            # -
+            #     column: 'primary_subject'
+            #     imputation:
+            #         fill_value: 'other'
     -
         numeric:
             -
-                column: 'price'
-                imputation:
-                    strategy: 'median'
-                scale: True
-            -
                 column: 'reach'
                 imputation:
-                    strategy: 'most_frequent'
+                    strategy: 'mean'
+                scale: True
+            -
+                column: 'price'
+                imputation:
+                    strategy: 'mean'
                 scale: True
     -
         binary:
-            # -
-            #     column: 'school_magnet'
-            #     imputation:
-            #         strategy: 'constant'
-            #         fill_value: 0
-            #         missing_values: -1
+
             -
                 column: 'school_charter'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1
+            -
+                column: 'school_magnet'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1
+            -
+                column: 'eligible_double_your_impact_match'
                 imputation:
                     strategy: 'constant'
                     fill_value: 0

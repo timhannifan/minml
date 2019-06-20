@@ -25,9 +25,10 @@ create table cleaned.projects as (
                     when grade_level = 'Grades 9-12' then 'high'
                     else 'other'
                 end as grade,
-                total_price_including_optional_support::decimal as price,
+                total_price_including_optional_support::real as price,
                 students_reached::integer as reach,
                 date_posted::timestamp as date,
+
                 case
                     when school_magnet = 't' then 1
                     when school_magnet = 'f' then 0

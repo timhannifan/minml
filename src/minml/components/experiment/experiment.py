@@ -189,13 +189,16 @@ class Experiment():
             train_x, train_y = self.dbclient.fetch_data(tr_s, tr_e)
             test_x, test_y = self.dbclient.fetch_data(te_s, te_e)
 
-            # Running feature transformations on train/test x data
-
             #Temporarily concat train/test to run through featuregen
             train_x['temp_label'] = 'train'
             test_x['temp_label'] = 'test'
-            concat_df = pd.concat([train_x , test_x])
+            concat_df = pd.concat([train_x, test_x])
+
             features_df = self.feature_gen.transform(concat_df)
+
+            print('train_x_df', train_x.shape)
+            print('features_df', features_df.shape)
+            print('concat_df', concat_df.shape)
 
             # Split back to train/test
             rich_train_x = features_df[features_df['temp_label'] == 'train']
@@ -204,15 +207,6 @@ class Experiment():
             # Drop temp label
             rich_train_x = rich_train_x.drop('temp_label', axis=1)
             rich_test_x = rich_test_x.drop('temp_label', axis=1)
-
-
-            # rich_train_x = self.feature_gen.transform(train_x)
-            # rich_test_x = self.feature_gen.transform(test_x)
-            # print(rich_train_x.columns)
-            # print(rich_test_x.columns)
-            # for col in rich_train_x.columns:
-                # print(col)
-                # print(len(rich_train_x[col].isna()))
 
             data = (rich_train_x, train_y, rich_test_x, test_y)
 
@@ -225,6 +219,7 @@ class Experiment():
                 for params in param_combinations:
                     clf = self.train(sk_model, params, data)
 
+                    print(rich_test_x.shape)
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
                     evl = self.evaluate(clf,

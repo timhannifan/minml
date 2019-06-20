@@ -17,11 +17,17 @@ class FeatureGenerator():
 
     def transform(self, df):
         click.echo(f"Starting feature generation")
+        print('start df.shape', df.shape)
 
         for task in self.feature_config:
+            print('df.shape', df.shape)
             for task_type, target_list in task.items():
+
                 if task_type == 'categoricals':
                     df = self.process_cat(target_list, df)
+                    # weird=df[df['temp_label'] != 'train']
+                    # print()
+                    # print('TRANSFORM INSIDE WEIRD', weird['temp_label'].shape)
                 elif task_type == 'numeric':
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
@@ -29,36 +35,41 @@ class FeatureGenerator():
                 elif task_type == 'drop':
                     df.drop(target_list, axis=1,inplace=True)
 
+        print('end df.shape', df.shape)
         return df
 
     def process_cat(self, target_list, df):
         print('processing CATEGORICAL values')
-        for col in target_list:
-            col_name = col['column']
 
+        for col in target_list:
+            print(col['column'], df.shape)
+
+            col_name = col['column']
+            df = self.impute_na(df, col_name,
+                                col['imputation'], 'categorical')
+            print('2', df.shape)
             df = pd.concat([df, pd.get_dummies(df[col_name],
                             prefix=col_name)], axis=1)
+            print('3', df.shape)
             df.drop(col_name, axis=1, inplace=True)
+            print('4', df.shape)
         return df
 
     def process_binary(self, target_list, df):
         for col in target_list:
             col_name = col['column']
-            print('processing BINARY', col_name)
-            impute_dict = col['imputation']
-
-            df = self.impute_na(df, col_name, impute_dict, 'binary')
+            df = self.impute_na(df, col_name, col['imputation'], 'binary')
 
         return df
 
     def process_num(self, target_list, df):
-
         for col in target_list:
             col_name = col['column']
-            print('processing NUMERIC', col_name)
             impute_dict = col['imputation']
             scale_after = col['scale']
 
+
+            df[col_name] = pd.to_numeric(df[col_name], errors='coerce')
             df = self.impute_na(df, col_name, impute_dict, 'numeric')
 
             if scale_after == True:
@@ -69,8 +80,9 @@ class FeatureGenerator():
 
     def scale_numeric_col(self, df, col_name):
         print('scale_numeric_col: ', df[col_name].shape)
+
+
         reshaped = self.reshape_series(df[col_name])
-        # print(len(reshaped))
         scaler.fit(reshaped)
         df[col_name] = scaler.transform(reshaped)
 
@@ -81,13 +93,15 @@ class FeatureGenerator():
         return arr.reshape((arr.shape[0], 1))
 
     def impute_na(self, df, col_name, config, f_type):
-        print('Processing MISSING values', col_name)
-
-        # Check for missing values, impute if so
-        missing = df[df[col_name].isna()].shape[0]
+        print('dftype',type(df))
+        series = df[col_name]
+        missing = df[series.isna()].shape[0]
 
         if missing > 0:
-            if f_type == 'numeric' or f_type == 'binary':
+            if f_type == 'categorical':
+                df[df[col_name].isna()] = config['fill_value']
+
+            elif f_type == 'numeric' or f_type == 'binary':
                 val_flag = np.nan
                 if 'missing_values' in config:
                     val_flag = config['missing_values']
@@ -100,9 +114,12 @@ class FeatureGenerator():
                     imp_mean = SimpleImputer(missing_values=val_flag,
                                          strategy=config['strategy'])
 
-                reshaped = self.reshape_series(df[col_name])
+                reshaped = self.reshape_series(series)
                 imp_mean.fit(reshaped)
                 df[col_name] = imp_mean.transform(reshaped)
+
+        else:
+            print('No missing values', col_name)
         return df
 
 
