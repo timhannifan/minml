@@ -94,7 +94,7 @@ feature_generation:
     -
         drop: ['entity_id','city','state','county',
                             'primary_subject','start_time', 'end_time',
-                            'date','school_charter','reach',
+                            'date','school_charter',
                             'eligible_double_your_impact_match']
     -
         categoricals:
@@ -109,18 +109,13 @@ feature_generation:
             -
                 column: 'price'
                 imputation:
-                    sum:
-                        type: 'null_category'
-                    choice_query: 'select distinct poverty from semantic.entities'
-                metrics:
-                    - 'sum'
+                    strategy: 'median'
+                    fill_value: None
+                    # missing_values: 'NULL' (default)
                 scale: True
-            # -
-            #     column: 'reach'
-            #     imputation:
-            #         sum:
-            #             type: 'null_category'
-            #         choice_query: 'select distinct poverty from semantic.entities'
-            #     metrics:
-            #         - 'sum'
-            #     scale: True
+            -
+                column: 'reach'
+                imputation:
+                    strategy: 'most_frequent'
+                    fill_value: None
+                scale: True

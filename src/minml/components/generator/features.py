@@ -18,13 +18,10 @@ class FeatureGenerator():
     def transform(self, df):
         click.echo(f"Starting feature generation")
 
-        # print('before', df.shape)
         for task in self.feature_config:
             for task_type, target_list in task.items():
                 if task_type == 'categoricals':
-                    print('before_cat', df.shape)
                     df = self.process_cat(target_list, df)
-                    print('after_cat', df.shape)
                 elif task_type == 'numeric':
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
@@ -36,12 +33,14 @@ class FeatureGenerator():
 
     def process_cat(self, target_list, df):
         print('processing categoricals')
+
+
+
         for col in target_list:
             col_name = col['column']
 
-            df = pd.concat([df,
-                            pd.get_dummies(df[col_name], prefix=col_name)],
-                            axis=1)
+            df = pd.concat([df, pd.get_dummies(df[col_name],
+                            prefix=col_name)], axis=1)
             df.drop(col_name, axis=1, inplace=True)
         return df
 
@@ -49,25 +48,54 @@ class FeatureGenerator():
 
     def scale_numeric_col(self, df, col_name):
         print('scale_numeric_col: ', col_name)
-        arr = np.array(df[col_name])
-        reshaped = arr.reshape((arr.shape[0], 1))
+
+        reshaped = self.reshape_series(df[col_name])
         scaler.fit(reshaped)
         df[col_name] = scaler.transform(reshaped)
 
         return df
 
+    def reshape_series(self, series):
+        arr = np.array(series)
+        return arr.reshape((arr.shape[0], 1))
 
+    def impute_na(self, df, col_name, config, num_or_cat):
+        print('Processing MISSING values', col_name)
+
+        # Check for missing values, impute if so
+        missing = df[df[col_name].isna()].shape[0]
+
+        if missing > 0:
+            if num_or_cat == 'numeric':
+                val_flag = np.nan
+                if 'missing_values' in config:
+                    val_flag = config['missing_values']
+
+                if config['strategy'] == 'constant' and 'fill_value' in config:
+                    imp_mean = SimpleImputer(missing_values=val_flag,
+                                         strategy=config['strategy'],
+                                         fill_value=config['fill_value'])
+                else:
+                    imp_mean = SimpleImputer(missing_values=val_flag,
+                                         strategy=config['strategy'])
+
+                reshaped = self.reshape_series(df[col_name])
+                imp_mean.fit(reshaped)
+                df[col_name] = imp_mean.transform(reshaped)
+        return df
 
     def process_num(self, target_list, df):
-        print('processing numerics')
+
         for col in target_list:
             col_name = col['column']
+            print('processing numeric', col_name)
             impute_dict = col['imputation']
-            metrics_list = col['metrics']
             scale_after = col['scale']
 
-            print('doing feature stuff on ', col_name)
+            df = self.impute_na(df, col_name, impute_dict, 'numeric')
 
+
+            # Check for missing values, impute if so
             if scale_after == True:
                 self.scale_numeric_col(df, col_name)
 
