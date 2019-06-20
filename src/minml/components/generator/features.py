@@ -11,8 +11,10 @@ import pandas as pd
 scaler = StandardScaler(copy=False, with_mean=False, with_std=True)
 
 class FeatureGenerator():
-    def __init__(self, feature_config):
+    def __init__(self, feature_config, random_seed=None):
         self.feature_config = feature_config
+        if random_seed is not None:
+            self.seed = random_seed
 
 
     def transform(self, df):
