@@ -20,14 +20,10 @@ class FeatureGenerator():
         print('start df.shape', df.shape)
 
         for task in self.feature_config:
-            print('df.shape', df.shape)
             for task_type, target_list in task.items():
 
                 if task_type == 'categoricals':
                     df = self.process_cat(target_list, df)
-                    # weird=df[df['temp_label'] != 'train']
-                    # print()
-                    # print('TRANSFORM INSIDE WEIRD', weird['temp_label'].shape)
                 elif task_type == 'numeric':
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
@@ -42,17 +38,12 @@ class FeatureGenerator():
         print('processing CATEGORICAL values')
 
         for col in target_list:
-            print(col['column'], df.shape)
-
             col_name = col['column']
             df = self.impute_na(df, col_name,
                                 col['imputation'], 'categorical')
-            print('2', df.shape)
             df = pd.concat([df, pd.get_dummies(df[col_name],
                             prefix=col_name)], axis=1)
-            print('3', df.shape)
             df.drop(col_name, axis=1, inplace=True)
-            print('4', df.shape)
         return df
 
     def process_binary(self, target_list, df):
@@ -93,7 +84,6 @@ class FeatureGenerator():
         return arr.reshape((arr.shape[0], 1))
 
     def impute_na(self, df, col_name, config, f_type):
-        print('dftype',type(df))
         series = df[col_name]
         missing = df[series.isna()].shape[0]
 

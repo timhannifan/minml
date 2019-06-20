@@ -218,8 +218,6 @@ class Experiment():
                 # For this model, iterate through parameter combinations
                 for params in param_combinations:
                     clf = self.train(sk_model, params, data)
-
-                    print(rich_test_x.shape)
                     y_hats = clf.predict(rich_test_x)
                     probs = self.get_predicted_probabilities(clf, rich_test_x)
                     evl = self.evaluate(clf,
