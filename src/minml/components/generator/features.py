@@ -25,17 +25,14 @@ class FeatureGenerator():
                 elif task_type == 'numeric':
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
-                    df = self.process_bin(target_list, df)
+                    df = self.process_binary(target_list, df)
                 elif task_type == 'drop':
                     df.drop(target_list, axis=1,inplace=True)
 
         return df
 
     def process_cat(self, target_list, df):
-        print('processing categoricals')
-
-
-
+        print('processing CATEGORICAL values')
         for col in target_list:
             col_name = col['column']
 
@@ -44,12 +41,36 @@ class FeatureGenerator():
             df.drop(col_name, axis=1, inplace=True)
         return df
 
+    def process_binary(self, target_list, df):
+        for col in target_list:
+            col_name = col['column']
+            print('processing BINARY', col_name)
+            impute_dict = col['imputation']
+
+            df = self.impute_na(df, col_name, impute_dict, 'binary')
+
+        return df
+
+    def process_num(self, target_list, df):
+
+        for col in target_list:
+            col_name = col['column']
+            print('processing NUMERIC', col_name)
+            impute_dict = col['imputation']
+            scale_after = col['scale']
+
+            df = self.impute_na(df, col_name, impute_dict, 'numeric')
+
+            if scale_after == True:
+                self.scale_numeric_col(df, col_name)
+
+        return df
 
 
     def scale_numeric_col(self, df, col_name):
-        print('scale_numeric_col: ', col_name)
-
+        print('scale_numeric_col: ', df[col_name].shape)
         reshaped = self.reshape_series(df[col_name])
+        # print(len(reshaped))
         scaler.fit(reshaped)
         df[col_name] = scaler.transform(reshaped)
 
@@ -59,14 +80,14 @@ class FeatureGenerator():
         arr = np.array(series)
         return arr.reshape((arr.shape[0], 1))
 
-    def impute_na(self, df, col_name, config, num_or_cat):
+    def impute_na(self, df, col_name, config, f_type):
         print('Processing MISSING values', col_name)
 
         # Check for missing values, impute if so
         missing = df[df[col_name].isna()].shape[0]
 
         if missing > 0:
-            if num_or_cat == 'numeric':
+            if f_type == 'numeric' or f_type == 'binary':
                 val_flag = np.nan
                 if 'missing_values' in config:
                     val_flag = config['missing_values']
@@ -84,34 +105,5 @@ class FeatureGenerator():
                 df[col_name] = imp_mean.transform(reshaped)
         return df
 
-    def process_num(self, target_list, df):
-
-        for col in target_list:
-            col_name = col['column']
-            print('processing numeric', col_name)
-            impute_dict = col['imputation']
-            scale_after = col['scale']
-
-            df = self.impute_na(df, col_name, impute_dict, 'numeric')
 
 
-            # Check for missing values, impute if so
-            if scale_after == True:
-                self.scale_numeric_col(df, col_name)
-
-        return df
-
-
-
-
-# numeric_steps = [
-#     ('imputer', SimpleImputer(strategy='median')),
-#     ('scaler', StandardScaler())]
-
-# numeric_transformer =
-
-# ct = ColumnTransformer(
-#     transformers=[
-#         # ('imputer', SimpleImputer(strategy='median'), numeric_features),
-#         ('scaler', StandardScaler(copy=True, with_mean=True, with_std=True), numeric_features)])
-#         # ('cat', categorical_transformer, categorical_features)])

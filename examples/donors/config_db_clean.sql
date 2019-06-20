@@ -30,15 +30,18 @@ create table cleaned.projects as (
                 date_posted::timestamp as date,
                 case
                     when school_magnet = 't' then 1
-                    else 0
+                    when school_magnet = 'f' then 0
+                    else -1
                 end as school_magnet,
                 case
                     when school_charter = 't' then 1
-                    else 0
+                    when school_charter = 'f' then 0
+                    else -1
                 end as school_charter,
                 case
                     when eligible_double_your_impact_match = 't' then 1
-                    else 0
+                    when eligible_double_your_impact_match = 'f' then 0
+                    else -1
                 end as eligible_double_your_impact_match,
 
                 case

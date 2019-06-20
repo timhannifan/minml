@@ -94,7 +94,7 @@ feature_generation:
     -
         drop: ['entity_id','city','state','county',
                             'primary_subject','start_time', 'end_time',
-                            'date','school_charter',
+                            'date',
                             'eligible_double_your_impact_match']
     -
         categoricals:
@@ -110,12 +110,24 @@ feature_generation:
                 column: 'price'
                 imputation:
                     strategy: 'median'
-                    fill_value: None
-                    # missing_values: 'NULL' (default)
                 scale: True
             -
                 column: 'reach'
                 imputation:
                     strategy: 'most_frequent'
-                    fill_value: None
                 scale: True
+    -
+        binary:
+            # -
+            #     column: 'school_magnet'
+            #     imputation:
+            #         strategy: 'constant'
+            #         fill_value: 0
+            #         missing_values: -1
+            -
+                column: 'school_charter'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1
+
