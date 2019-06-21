@@ -1,9 +1,20 @@
-from components.visualization import plot_precision_recall
+
+
+import os
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from .metrics import (plot_predicted_scores,precision_recall_curve, save_fig, AXIS, TITLE, TICKS)
+
+
 
 class ChartMaker(object):
     """docstring for ChartMaker"""
-    def __init__(self, config):
+    def __init__(self, config, viz_dir):
         self.config = config
+        self.viz_dir = viz_dir
 
     def plot_pr(self, data):
         """
@@ -17,7 +28,7 @@ class ChartMaker(object):
 
         if 'generate_graphs' in self.config and self.config['generate_graphs']:
             y_true, y_score, baseline, dir_path, title = data
-            plot_precision_recall(y_true, y_score, baseline, dir_path, title)
+            self.plot_precision_recall(y_true, y_score, baseline, dir_path, title)
 
 
     def plot_precision_recall(self, y_true, y_score, baseline, dir_path, title=""):

@@ -78,55 +78,6 @@ def plot_predicted_scores(cv_scores, dir_path, title=""):
     save_fig(dir_path, "/predicted_proba/", title, fig)
 
 
-def plot_precision_recall(y_true, y_score, baseline, dir_path, title=""):
-    """
-    Generates plots for precision and recall curve. This function is
-    adapted from https://github.com/rayidghani/magicloops.
-
-    Inputs:
-        - y_true (Series): the Series of true target values
-        - y_score (Series): the Series of scores for the model
-        - baseline (float): the proportion of positive observations in the
-            sample
-        - dir_path (str): path of the directory for training visualization
-        - title (string): the name of the model
-
-    """
-    print('saving ', title)
-    pr, re, thresholds = precision_recall_curve(y_true, y_score)
-    pr = pr[:-1]
-    re = re[:-1]
-    pct_above_per_thresh = []
-    number_scored = len(y_score)
-
-    for value in thresholds:
-        num_above_thresh = len(y_score[y_score >= value])
-        pct_above_thresh = num_above_thresh / float(number_scored)
-        pct_above_per_thresh.append(pct_above_thresh)
-
-    pct_above_per_thresh = np.array(pct_above_per_thresh)
-
-    plt.clf()
-    fig, ax1 = plt.subplots()
-    ax1.plot(pct_above_per_thresh, pr, 'b')
-    ax1.set_xlabel('Percent of Population', fontproperties=AXIS)
-    ax1.set_ylabel('Precision', fontproperties=AXIS, color='b')
-
-    ax2 = ax1.twinx()
-    ax2.plot(pct_above_per_thresh, re, 'r')
-    ax2.set_ylabel('Recall', fontproperties=AXIS, color='r')
-    plt.title("Precision, Recall, and Percent of Population\n" + title,
-              fontproperties=AXIS)
-
-    plt.axhline(baseline, ls='--', color='black')
-
-    ax1.set_ylim([0, 1.05])
-    ax2.set_ylim([0, 1.05])
-    ax1.set_xlim([0, 1])
-
-    save_fig(dir_path, "/precision_recall/", title, fig)
-
-
 def plot_auc_roc(clf, X_train, X_test, y_train, y_test, dir_path, title=""):
     """
     Plot the AUC ROC curve of the specific classifier.

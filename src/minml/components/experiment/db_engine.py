@@ -24,7 +24,7 @@ class DBEngine:
         self.index_sql = self.project_path + 'config_db_index.sql'
         self.data_path = data_file_path
 
-    def fetch_data(self, start, end):
+    def get_split(self, start, end):
         cur = self.get_db_cursor()
 
         cmd = """
@@ -36,14 +36,10 @@ class DBEngine:
         cur.execute(cmd)
         results = cur.fetchall()
         column_names = [desc[0] for desc in cur.description]
-        df = pd.DataFrame(results, columns=column_names)
-
-        # TODO: fix columns
-        x = df.drop('result', axis=1)
-        y = df.iloc[:,-1]
-
         self.close_connection()
-        return (x, y)
+
+        return (column_names, results)
+
 
     # Create any tables needed by this Client. Drop table if exists first.
     def create_tables(self):
@@ -125,11 +121,12 @@ class DBEngine:
 
     # open a connection to a psql database, using the self.dbXX parameters
     def open_connection(self):
-        self.conn = pg.connect(host=self.dbhost, database=self.dbname, user=self.dbusername, port=self.dbport)
+        self.conn = pg.connect(host=self.dbhost, database=self.dbname,
+                               user=self.dbusername, port=self.dbport)
 
     # check whether connection is open
     def is_open(self):
-            return (self.conn is not None)
+        return (self.conn is not None)
 
     # Close any active connection to the database
     def close_connection(self):

@@ -9,9 +9,10 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
 
 class ModelEvaluator(object):
     """docstring for ModelEvaluator"""
-    def __init__(self, config, dbclient, random_seed):
+    def __init__(self, config, dbclient, random_seed, res_dir):
         self.config = config
         self.dbclient = dbclient
+        self.res_dir = res_dir
         self.metric_map = {"accuracy": accuracy_score,
                             "precision": precision_score,
                             "recall": recall_score,
@@ -28,7 +29,6 @@ class ModelEvaluator(object):
         cls = getattr(module, class_name)
         instance = cls(**params)
 
-        # print('!!!!!!!!!!!!!!', rich_train_x)
         return instance.fit(rich_train_x, train_y)
 
     def get_baseline(self, y_data):
@@ -62,7 +62,7 @@ class ModelEvaluator(object):
                             train_info = (test_y,
                                 probs,
                                 baseline,
-                                self.config['viz_path'],
+                                self.res_dir,
                                 "%s: %s" % (sk_model, str(params))
                                 )
                             if m == 'precision':
@@ -74,7 +74,7 @@ class ModelEvaluator(object):
                                 elif m_at_k > best_at_k:
                                     best_at_k = m_at_k
                                     best = [(report, train_info)]
-                            # writes to results table
+
                             self.dbclient.write_result(report)
 
 
