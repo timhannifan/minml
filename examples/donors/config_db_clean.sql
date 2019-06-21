@@ -17,7 +17,7 @@ create table cleaned.projects as (
                     resource_type is null then 'other'
                     else btrim(lower(resource_type))
                 end as type,
-                btrim(replace(regexp_replace(btrim(lower(poverty_level)), 'poverty',''), $$'$$,'')) as poverty,
+                btrim(replace(regexp_replace(btrim(lower(poverty_level)), 'poverty',''), $$'$$,''))::varchar as poverty,
                 case
                     when grade_level = 'Grades 3-5' then 'primary'
                     when grade_level = 'Grades PreK-2' then 'pre'

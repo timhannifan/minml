@@ -92,13 +92,13 @@ scoring:
 
 feature_generation:
     -
-        drop: ['entity_id','city','state','county','start_time', 'end_time','date', 'poverty','school_magnet']
+        drop: ['entity_id','city','state','county','start_time', 'end_time','date','school_magnet','eligible_double_your_impact_match','school_charter']
     -
         categoricals:
-            # -
-            #     column: 'poverty'
-            #     imputation:
-            #         fill_value: 'other1'
+            -
+                column: 'poverty'
+                imputation:
+                    fill_value: 'poverty_other'
             -
                 column: 'grade'
                 imputation:
@@ -123,25 +123,25 @@ feature_generation:
                 imputation:
                     strategy: 'median'
                 scale: False
-    -
-        binary:
+    # -
+        # binary:
 
-            -
-                column: 'school_charter'
-                imputation:
-                    strategy: 'constant'
-                    fill_value: 0
-                    missing_values: -1
+            # -
+            #     column: 'school_charter'
+            #     imputation:
+            #         strategy: 'constant'
+            #         fill_value: 0
+            #         missing_values: -1
             # -
             #     column: 'school_magnet'
             #     imputation:
             #         strategy: 'constant'
             #         fill_value: 0
+            # #         missing_values: -1
+            # -
+            #     column: 'eligible_double_your_impact_match'
+            #     imputation:
+            #         strategy: 'constant'
+            #         fill_value: 0
             #         missing_values: -1
-            -
-                column: 'eligible_double_your_impact_match'
-                imputation:
-                    strategy: 'constant'
-                    fill_value: 0
-                    missing_values: -1
 

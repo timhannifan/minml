@@ -1,9 +1,6 @@
-import csv
 import random
 import logging
 import click
-import importlib
-import statistics
 
 from .db_engine import DBEngine
 from .time_utils import get_date_splits
@@ -55,22 +52,15 @@ class Experiment():
             train_x['temp_label'] = 'train'
             test_x['temp_label'] = 'test'
             concat_df = pd.concat([train_x, test_x])
-
             features_df = self.feature_gen.transform(concat_df)
 
-            # print('train_x_df', train_x.shape)
-            # print('features_df', features_df.shape)
-            # print('concat_df', concat_df.shape)
+            # Split back to train/test, Drop temp label
+            train_x = features_df[features_df['temp_label'] != 'test']
+            test_x = features_df[features_df['temp_label'] == 'test']
+            train_x.drop('temp_label', axis=1, inplace=True)
+            test_x.drop('temp_label', axis=1, inplace=True)
 
-            # Split back to train/test
-            rich_train_x = features_df[features_df['temp_label'] == 'train']
-            rich_test_x = features_df[features_df['temp_label'] == 'test']
-
-            # Drop temp label
-            rich_train_x = rich_train_x.drop('temp_label', axis=1)
-            rich_test_x = rich_test_x.drop('temp_label', axis=1)
-
-            data = (rich_train_x, train_y, rich_test_x, test_y)
+            data = (train_x, train_y, test_x, test_y)
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
@@ -80,8 +70,8 @@ class Experiment():
                 # For this model, iterate through parameter combinations
                 for params in param_combinations:
                     clf = self.evaluator.train(sk_model, params, data)
-                    y_hats = self.evaluator.predict(clf, rich_test_x)
-                    probs = self.evaluator.get_predicted_probabilities(clf, rich_test_x)
+                    y_hats = self.evaluator.predict(clf, test_x)
+                    probs = self.evaluator.get_predicted_probabilities(clf, test_x)
                     baseline = self.evaluator.get_baseline(train_y)
                     evl = self.evaluator.evaluate(clf, data, y_hats, probs,
                         split, sk_model, params, baseline)
@@ -102,7 +92,5 @@ class Experiment():
             # Generate graphs for the best models in the split
             for model in split_best_models:
                 report, train_info = model
-
                 self.chartmaker.plot_pr(train_info)
         click.echo(f"Experiment finished")
-
