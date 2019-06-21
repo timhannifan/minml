@@ -8,4 +8,5 @@ dist/*
 build/*
 *.txt
 *results.csv
+examples/donors/results/*
 examples/donors/visualization/*
