@@ -27,6 +27,7 @@ class Experiment():
         self.seed = self.config.get('random_seed', 123456)
         self.res_dir = self.save_to + 'model/'
         self.viz_dir = self.save_to + 'visualization/'
+        self.generate_project_dirs([self.res_dir,self.viz_dir])
 
         random.seed(self.seed)
         self.dbclient = DBEngine(self.config['project_path'],
@@ -38,11 +39,21 @@ class Experiment():
         self.splits = get_date_splits(self.config['temporal_config'])
         self.chartmaker = ChartMaker(self.config,self.viz_dir)
 
+        if load_db:
+            self.dbclient.run()
 
+    def generate_project_dirs(self, to_generate):
+        '''
+        Creates directories for results and visualizations, erases directory
+        content for each run of Experiment
+        Inputs:
+        to_generate (list): list of directories to delete/create
+        Returns: nothing
+        '''
         if not os.path.exists(self.save_to):
             os.makedirs(self.save_to)
 
-        for path in [self.res_dir,self.viz_dir]:
+        for path in to_generate:
             if not os.path.exists(path):
                 os.makedirs(path)
 
@@ -54,8 +65,74 @@ class Experiment():
                 except Exception as e:
                     print(e)
 
-        if load_db:
-            self.dbclient.run()
+    def build_train_test(self, split):
+        train_start, train_end, test_start, test_end = split
+
+        tr_col_names, train = self.dbclient.get_split(train_start,
+                                                      train_end)
+        te_col_names, test = self.dbclient.get_split(test_start, test_end)
+
+        train_df = pd.DataFrame(train, columns=tr_col_names)
+        train_x = train_df.drop('result', axis=1)
+        train_y = train_df['result']
+
+        test_df = pd.DataFrame(test, columns=te_col_names)
+        test_x = test_df.drop('result', axis=1)
+        test_y = test_df['result']
+
+        print('train_x, train_y shapes: ',train_x.shape, train_y.shape)
+        print('test_x, test_y shapes: ',test_x.shape, test_y.shape)
+
+        #Temporarily concat train/test to run through featuregen
+        train_x['temp_label'] = 'train'
+        test_x['temp_label'] = 'test'
+        concat_df = pd.concat([train_x, test_x])
+
+        features_df = self.feature_gen.transform(concat_df)
+        features_df.reset_index(drop=True, inplace=True)
+
+        # Split back to train/test, Drop temp label
+        train_x = features_df[features_df['temp_label'] != 'test']
+        test_x = features_df[features_df['temp_label'] == 'test']
+        train_x.drop('temp_label', axis=1, inplace=True)
+        test_x.drop('temp_label', axis=1, inplace=True)
+
+        return (train_x, train_y, test_x, test_y)
+
+    def save_train_test(self, dfs):
+        names = ['train_x', 'train_y', 'test_x', 'test_y']
+        def _write(i, df):
+            df.to_csv(self.res_dir + names[i] + '.csv')
+
+        for i, df in enumerate(dfs):
+            _write(i, df)
+        # train_x.to_csv(self.res_dir + 'train_x.csv')
+        # train_y.to_csv(self.res_dir + 'train_y.csv')
+        # test_x.to_csv(self.res_dir + 'test_x.csv')
+        # test_y.to_csv(self.res_dir + 'test_y.csv')
+
+    def process_best_models(self, split_best_models):
+        # Generate graphs for the best models in the split
+        for model in split_best_models:
+            print(type(model))
+            # report, train_info, test_info, clf, params = model
+            # test_x, test_y = test_info
+
+            # y_score, baseline, dir_path, title, _, _, params = train_info
+
+            # if ('generate_graphs' in self.config and
+            # self.config['generate_graphs']):
+            #     self.chartmaker.plot_precision_recall(test_y, y_score,
+            #                                           baseline, dir_path,
+            #                                           title)
+
+            # if ('generate_csv' in self.config and
+            # self.config['generate_csv']):
+            #     pd.DataFrame(y_true).to_csv(self.res_dir+'y_true.csv')
+            #     pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
+
+            # self.evaluator.cross_validate(clf, train_x, train_y)
+
 
     def run(self):
         print('RUN')
@@ -70,38 +147,16 @@ class Experiment():
             split_best_prec = 0.0
             split_best_models = []
 
-            tr_col_names, train = self.dbclient.get_split(train_start,
-                                                          train_end)
-            te_col_names, test = self.dbclient.get_split(test_start, test_end)
-
-            train_df = pd.DataFrame(train, columns=tr_col_names)
-            train_x = train_df.drop('result', axis=1)
-            train_y = train_df['result']
-
-            test_df = pd.DataFrame(test, columns=te_col_names)
-            test_x = test_df.drop('result', axis=1)
-            test_y = test_df['result']
-
-            print('train_x, train_y shapes: ',train_x.shape, train_y.shape)
-            print('test_x, test_y shapes: ',test_x.shape, test_y.shape)
-
-            #Temporarily concat train/test to run through featuregen
-            train_x['temp_label'] = 'train'
-            test_x['temp_label'] = 'test'
-            concat_df = pd.concat([train_x, test_x])
-
-            features_df = self.feature_gen.transform(concat_df)
-            features_df.reset_index(drop=True, inplace=True)
-
-            # Split back to train/test, Drop temp label
-            train_x = features_df[features_df['temp_label'] != 'test']
-            test_x = features_df[features_df['temp_label'] == 'test']
-            train_x.drop('temp_label', axis=1, inplace=True)
-            test_x.drop('temp_label', axis=1, inplace=True)
+            if self.config.get('use_exising_train_test'):
+                train_x  = pd.read_csv(self.res_dir + 'train_x.csv')
+                train_y  = pd.read_csv(self.res_dir + 'train_y.csv')
+                test_x  = pd.read_csv(self.res_dir + 'test_x.csv')
+                test_y  = pd.read_csv(self.res_dir + 'test_y.csv')
+            else:
+                train_x, train_y, test_x, test_y = self.build_train_test(split)
+                self.save_train_test([train_x, train_y, test_x, test_y])
 
             data = (train_x, train_y, test_x, test_y)
-
-
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
@@ -130,23 +185,4 @@ class Experiment():
                         split_best_prec = current_best_prec
                         split_best_models = evl
 
-            # Generate graphs for the best models in the split
-            for model in split_best_models:
-                report, train_info, test_info, clf, params = model
-                test_x, test_y = test_info
-
-                y_score, baseline, dir_path, title, _, _, params = train_info
-
-                if ('generate_graphs' in self.config and
-                self.config['generate_graphs']):
-                    self.chartmaker.plot_precision_recall(test_y, y_score,
-                                                          baseline, dir_path,
-                                                          title)
-
-                if ('generate_csv' in self.config and
-                self.config['generate_csv']):
-                    pd.DataFrame(y_true).to_csv(self.res_dir+'y_true.csv')
-                    pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
-                    train_x.to_csv(self.res_dir+'train_x.csv')
-                    train_y.to_csv(self.res_dir+'train_y.csv')
-                self.evaluator.cross_validate(clf, train_x, train_y)
+            self.process_best_models(split_best_models)

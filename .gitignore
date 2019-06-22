@@ -9,4 +9,5 @@ build/*
 *.txt
 *results.csv
 examples/donors/results/*
+examples/donors/data_tiny.csv
 examples/donors/visualization/*
