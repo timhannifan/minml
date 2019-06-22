@@ -63,6 +63,8 @@ class Experiment():
         splits = self.splits
 
         for i, split in enumerate(splits):
+            if i >0:
+                continue
             click.echo("\nStarting split: %s of %s" % (i, len(splits)))
             train_start, train_end, test_start, test_end = split
             split_best_prec = 0.0
@@ -99,8 +101,7 @@ class Experiment():
 
             data = (train_x, train_y, test_x, test_y)
 
-            train_x.to_csv(self.res_dir+'train_x.csv')
-            train_y.to_csv(self.res_dir+'train_y.csv')
+
 
             # Iterate through config models
             for sk_model, param_dict in model_config.items():
@@ -131,10 +132,21 @@ class Experiment():
 
             # Generate graphs for the best models in the split
             for model in split_best_models:
-                report, train_info = model
-                self.chartmaker.plot_pr(train_info)
-                y_true, y_score, baseline, dir_path, title = train_info
+                report, train_info, test_info, clf, params = model
+                test_x, test_y = test_info
 
-                pd.DataFrame(y_true).to_csv(self.res_dir+'y_true.csv')
-                pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
-        click.echo(f"Experiment finished")
+                y_score, baseline, dir_path, title, _, _, params = train_info
+
+                if ('generate_graphs' in self.config and
+                self.config['generate_graphs']):
+                    self.chartmaker.plot_precision_recall(test_y, y_score,
+                                                          baseline, dir_path,
+                                                          title)
+
+                if ('generate_csv' in self.config and
+                self.config['generate_csv']):
+                    pd.DataFrame(y_true).to_csv(self.res_dir+'y_true.csv')
+                    pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
+                    train_x.to_csv(self.res_dir+'train_x.csv')
+                    train_y.to_csv(self.res_dir+'train_y.csv')
+                self.evaluator.cross_validate(clf, train_x, train_y)

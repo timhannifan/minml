@@ -5,7 +5,9 @@ import importlib
 import numpy as np
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score, roc_auc_score)
+from sklearn.model_selection import cross_validate
 
+KFOLD_NUMBER = 10
 
 class ModelEvaluator(object):
     """docstring for ModelEvaluator"""
@@ -59,11 +61,18 @@ class ModelEvaluator(object):
 
                             report = [tr_s, tr_e, te_s, te_e, sk_model,
                                       params, m, k, m_at_k]
-                            train_info = (test_y,
+                            train_info = (
                                 probs,
                                 baseline,
                                 self.res_dir,
-                                "%s: %s" % (sk_model, str(params))
+                                "%s: %s" % (sk_model, str(params)),
+                                train_x,
+                                train_y,
+                                params
+                                )
+                            test_info = (
+                                test_x,
+                                test_y
                                 )
                             if m == 'precision':
                                 if best_at_k == 0:
@@ -73,7 +82,8 @@ class ModelEvaluator(object):
                                     best.append((report, train_info))
                                 elif m_at_k > best_at_k:
                                     best_at_k = m_at_k
-                                    best = [(report, train_info)]
+                                    best = [(report, train_info, test_info,
+                                             clf, params)]
 
                             self.dbclient.write_result(report)
 
@@ -87,8 +97,18 @@ class ModelEvaluator(object):
             #     print('no thresholds', metric)
             #     pass
 
-
+        print('MODEL EVALUATE FOUND %s BEST MODELS'%(len(best)))
         return best
+
+    def cross_validate(self, clf, train_x, train_y):
+        metrics = ['precision', 'recall','roc_auc']
+        scores = cross_validate(clf, train_x, train_y, scoring=metrics,
+                                cv=KFOLD_NUMBER)
+        # print('KEYS', sorted(scores.keys()))
+        for k, v in scores.items():
+            print(k, v)
+
+
 
     def metrics_at_k(self, k, test_y, probs, metric_name):
         """

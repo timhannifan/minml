@@ -16,19 +16,17 @@ class ChartMaker(object):
         self.config = config
         self.viz_dir = viz_dir
 
-    def plot_pr(self, data):
-        """
-        Generates precision/recall graphs
+    # def plot_pr(self, data):
+    #     """
+    #     Generates precision/recall graphs
 
-        Inputs:
-            - data (tuple): paramaters for visualisation. see params below
-        Returns:
-            Nothing
-        """
-
-        if 'generate_graphs' in self.config and self.config['generate_graphs']:
-            y_true, y_score, baseline, dir_path, title = data
-            self.plot_precision_recall(y_true, y_score, baseline, dir_path, title)
+    #     Inputs:
+    #         - data (tuple): paramaters for visualisation. see params below
+    #     Returns:
+    #         Nothing
+    #     """
+    #     y_score, baseline, dir_path, title, train_x, train_y, params = data
+    #     self.plot_precision_recall(train_y, y_score, baseline, dir_path, title)
 
 
     def plot_precision_recall(self, y_true, y_score, baseline, dir_path, title=""):

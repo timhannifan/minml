@@ -1,9 +1,10 @@
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data_small.csv"
+input_path: "../../examples/donors/data_full.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 viz_path: "../../examples/donors/visualization/"
 generate_graphs: True
+generate_csv: False
 
 random_seed: 23895478
 
@@ -30,7 +31,7 @@ model_config:
     #     max_depth: [2]
     'sklearn.svm.LinearSVC':
         penalty: [l2]
-        C: [5,10,15]
+        C: [5,7,10]
     # 'sklearn.linear_model.LogisticRegression':
     #     penalty: [l2]
     #     C: [1.0]
