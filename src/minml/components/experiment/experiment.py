@@ -27,7 +27,8 @@ class Experiment():
         self.seed = self.config.get('random_seed', 123456)
         self.res_dir = self.save_to + 'model/'
         self.viz_dir = self.save_to + 'visualization/'
-        self.save_feature_data_to = self.save_to + 'feature_data/'
+        self.save_feature_data_to = self.config['project_path'] + 'feature_data/'
+
         delete_on_gen = [self.res_dir,self.viz_dir]
         if self.config.get('drop_existing_train_test'):
             delete_on_gen.append(self.save_feature_data_to)
@@ -113,13 +114,17 @@ class Experiment():
         def _write(i, df, split):
             # df.to_csv(self.save_feature_data_to +
                       # self.tt_names[i]+'_' + str(split) + '.csv')
-            df.to_csv(self.feature_fname(i, self.tt_names[i][0],
+            print('writing', self.feature_fname(split, self.tt_names[i][0],
+                                             self.tt_names[i][1]))
+            df.to_csv(self.feature_fname(split, self.tt_names[i][0],
                                              self.tt_names[i][1]),
-                      header=True)
+                      header=True,
+                      index=False)
         for i, df in enumerate(dfs):
             _write(i, df, split)
 
     def feature_fname(self, split_num, te_or_tr, x_or_y):
+        # print('FEATURE FILENAME','%s%s_%s_%s.csv'%(self.save_feature_data_to, te_or_tr,x_or_y, split_num) )
         return '%s%s_%s_%s.csv'%(self.save_feature_data_to, te_or_tr,
                                  x_or_y, split_num)
 
@@ -164,9 +169,14 @@ class Experiment():
 
             if self.config.get('use_exising_train_test'):
                 train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
+                print(self.feature_fname(i, 'train', 'x'))
                 train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
                 test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
                 test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
+                train_y = train_y['result']
+                test_y = test_y['result']
+                print('!!!train_x, train_y shapes: ',train_x.shape, train_y.shape)
+                print('!!!test_x, test_y shapes: ',test_x.shape, test_y.shape)
             else:
                 train_x, train_y, test_x, test_y = self.build_train_test(split)
                 self.save_train_test([train_x, train_y, test_x, test_y], i)
