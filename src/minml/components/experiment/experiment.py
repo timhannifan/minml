@@ -106,32 +106,32 @@ class Experiment():
 
         for i, df in enumerate(dfs):
             _write(i, df)
-        # train_x.to_csv(self.res_dir + 'train_x.csv')
-        # train_y.to_csv(self.res_dir + 'train_y.csv')
-        # test_x.to_csv(self.res_dir + 'test_x.csv')
-        # test_y.to_csv(self.res_dir + 'test_y.csv')
 
     def process_best_models(self, split_best_models):
         # Generate graphs for the best models in the split
         for model in split_best_models:
-            print(type(model))
-            # report, train_info, test_info, clf, params = model
-            # test_x, test_y = test_info
+            test_y = model.get('test_data').get('y')
+            y_score = model.get('test_data').get('probs')
+            baseline = model.get('results').get('baseline')
+            dir_path = self.viz_dir
+            title = model.get('meta').get('title')
+            train_x = model.get('train_data').get('x')
+            train_y = model.get('train_data').get('y')
+            clf = model.get('model').get('clf')
 
-            # y_score, baseline, dir_path, title, _, _, params = train_info
+            if ('generate_graphs' in self.config and
+            self.config['generate_graphs']):
+                self.chartmaker.plot_precision_recall(test_y, y_score,
+                                                      baseline, dir_path,
+                                                      title)
 
-            # if ('generate_graphs' in self.config and
-            # self.config['generate_graphs']):
-            #     self.chartmaker.plot_precision_recall(test_y, y_score,
-            #                                           baseline, dir_path,
-            #                                           title)
+            if ('generate_csv' in self.config and
+            self.config['generate_csv']):
+                pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
 
-            # if ('generate_csv' in self.config and
-            # self.config['generate_csv']):
-            #     pd.DataFrame(y_true).to_csv(self.res_dir+'y_true.csv')
-            #     pd.DataFrame(y_score).to_csv(self.res_dir+'y_score.csv')
+            self.cv_scores = self.evaluator.cross_validate(clf, train_x,
+                                                                train_y)
 
-            # self.evaluator.cross_validate(clf, train_x, train_y)
 
 
     def run(self):
@@ -140,8 +140,8 @@ class Experiment():
         splits = self.splits
 
         for i, split in enumerate(splits):
-            if i >0:
-                continue
+            # if i >0:
+            #     continue
             click.echo("\nStarting split: %s of %s" % (i, len(splits)))
             train_start, train_end, test_start, test_end = split
             split_best_prec = 0.0
@@ -172,17 +172,21 @@ class Experiment():
                     evl = self.evaluator.evaluate(clf, data, y_hats, probs,
                         split, sk_model, params, baseline)
 
-                    current_best_prec = evl[0][0][8]
+                    for best in evl:
+                        if (len(set(test_y) - set(y_hats)) != 0) or len(set(y_hats)) == 1:
+                            continue
+                        current_best_prec = best.get('results').get('metric_value')
 
-                    if split_best_prec == 0:
-                        split_best_prec = current_best_prec
-                        for m in evl:
-                            split_best_models.append(m)
-                    elif current_best_prec == split_best_prec:
-                        for m in evl:
-                            split_best_models.append(m)
-                    elif current_best_prec > split_best_prec:
-                        split_best_prec = current_best_prec
-                        split_best_models = evl
+                        if split_best_prec == 0:
+                            split_best_prec = current_best_prec
+                            split_best_models.append(best)
 
+                        elif current_best_prec == split_best_prec:
+                            split_best_models.append(best)
+
+                        elif current_best_prec > split_best_prec:
+                            split_best_prec = current_best_prec
+                            split_best_models = [best]
+
+            print('Number of best splits',len(split_best_models))
             self.process_best_models(split_best_models)

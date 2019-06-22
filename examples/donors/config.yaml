@@ -1,5 +1,5 @@
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data_tiny.csv"
+input_path: "../../examples/donors/data_small.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 viz_path: "../../examples/donors/visualization/"

@@ -61,29 +61,43 @@ class ModelEvaluator(object):
 
                             report = [tr_s, tr_e, te_s, te_e, sk_model,
                                       params, m, k, m_at_k]
-                            train_info = (
-                                probs,
-                                baseline,
-                                self.res_dir,
-                                "%s: %s" % (sk_model, str(params)),
-                                train_x,
-                                train_y,
-                                params
-                                )
-                            test_info = (
-                                test_x,
-                                test_y
-                                )
+
+                            eval_dict = {
+                                'report': report,
+                                'results': {
+                                    'metric': m,
+                                    'threshold': k,
+                                    'metric_value': m_at_k,
+                                    'baseline': baseline
+                                },
+                                'model': {
+                                    'type': sk_model,
+                                    'params': params,
+                                    'clf': clf
+                                },
+                                'train_data':{
+                                    'x': train_x,
+                                    'y': train_y
+
+                                },
+                                'test_data': {
+                                    'x': test_x,
+                                    'y': test_y,
+                                    'probs': probs
+                                },
+                                'meta': {
+                                    'title': sk_model + str(params)
+                                }
+                            }
                             if m == 'precision':
                                 if best_at_k == 0:
                                     best_at_k = m_at_k
-                                    best.append((report, train_info))
+                                    best.append(eval_dict)
                                 elif m_at_k == best_at_k:
-                                    best.append((report, train_info))
+                                    best.append(eval_dict)
                                 elif m_at_k > best_at_k:
                                     best_at_k = m_at_k
-                                    best = [(report, train_info, test_info,
-                                             clf, params)]
+                                    best = [eval_dict]
 
                             self.dbclient.write_result(report)
 
@@ -102,11 +116,9 @@ class ModelEvaluator(object):
 
     def cross_validate(self, clf, train_x, train_y):
         metrics = ['precision', 'recall','roc_auc']
-        scores = cross_validate(clf, train_x, train_y, scoring=metrics,
-                                cv=KFOLD_NUMBER)
-        # print('KEYS', sorted(scores.keys()))
-        for k, v in scores.items():
-            print(k, v)
+
+        return cross_validate(clf, train_x, train_y, scoring=metrics,
+                                cv=KFOLD_NUMBER, return_train_score=True)
 
 
 
