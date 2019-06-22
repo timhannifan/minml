@@ -3,8 +3,9 @@ input_path: "../../examples/donors/data_small.csv"
 project_path: "../../examples/donors/"
 output_path: "../../examples/donors/results.csv"
 viz_path: "../../examples/donors/visualization/"
-generate_graphs: True
+generate_graphs: False
 generate_csv: True
+drop_existing_train_test: True
 use_exising_train_test: False
 
 random_seed: 23895478

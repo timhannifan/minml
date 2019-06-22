@@ -27,7 +27,11 @@ class Experiment():
         self.seed = self.config.get('random_seed', 123456)
         self.res_dir = self.save_to + 'model/'
         self.viz_dir = self.save_to + 'visualization/'
-        self.generate_project_dirs([self.res_dir,self.viz_dir])
+        self.save_feature_data_to = self.save_to + 'feature_data/'
+        delete_on_gen = [self.res_dir,self.viz_dir]
+        if self.config.get('drop_existing_train_test'):
+            delete_on_gen.append(self.save_feature_data_to)
+        self.generate_project_dirs(delete_on_gen)
 
         random.seed(self.seed)
         self.dbclient = DBEngine(self.config['project_path'],
@@ -38,6 +42,7 @@ class Experiment():
                                         self.res_dir)
         self.splits = get_date_splits(self.config['temporal_config'])
         self.chartmaker = ChartMaker(self.config,self.viz_dir)
+        self.tt_names = [('train','x'),('train','y'),('test','x'), ('test','y')]
 
         if load_db:
             self.dbclient.run()
@@ -99,13 +104,24 @@ class Experiment():
 
         return (train_x, train_y, test_x, test_y)
 
-    def save_train_test(self, dfs):
-        names = ['train_x', 'train_y', 'test_x', 'test_y']
-        def _write(i, df):
-            df.to_csv(self.res_dir + names[i] + '.csv')
+    def save_train_test(self, dfs, split):
 
+        if not os.path.exists(self.save_feature_data_to):
+            os.makedirs(self.save_feature_data_to)
+
+
+        def _write(i, df, split):
+            # df.to_csv(self.save_feature_data_to +
+                      # self.tt_names[i]+'_' + str(split) + '.csv')
+            df.to_csv(self.feature_fname(i, self.tt_names[i][0],
+                                             self.tt_names[i][1]),
+                      header=True)
         for i, df in enumerate(dfs):
-            _write(i, df)
+            _write(i, df, split)
+
+    def feature_fname(self, split_num, te_or_tr, x_or_y):
+        return '%s%s_%s_%s.csv'%(self.save_feature_data_to, te_or_tr,
+                                 x_or_y, split_num)
 
     def process_best_models(self, split_best_models):
         # Generate graphs for the best models in the split
@@ -133,7 +149,6 @@ class Experiment():
                                                                 train_y)
 
 
-
     def run(self):
         print('RUN')
         model_config = self.config['model_config']
@@ -148,13 +163,13 @@ class Experiment():
             split_best_models = []
 
             if self.config.get('use_exising_train_test'):
-                train_x  = pd.read_csv(self.res_dir + 'train_x.csv')
-                train_y  = pd.read_csv(self.res_dir + 'train_y.csv')
-                test_x  = pd.read_csv(self.res_dir + 'test_x.csv')
-                test_y  = pd.read_csv(self.res_dir + 'test_y.csv')
+                train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
+                train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
+                test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
+                test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
             else:
                 train_x, train_y, test_x, test_y = self.build_train_test(split)
-                self.save_train_test([train_x, train_y, test_x, test_y])
+                self.save_train_test([train_x, train_y, test_x, test_y], i)
 
             data = (train_x, train_y, test_x, test_y)
 
@@ -190,3 +205,4 @@ class Experiment():
 
             print('Number of best splits',len(split_best_models))
             self.process_best_models(split_best_models)
+
