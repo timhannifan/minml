@@ -35,8 +35,7 @@ class Experiment():
         self.generate_project_dirs(delete_on_gen)
 
         random.seed(self.seed)
-        self.dbclient = DBEngine(self.config['project_path'],
-                  self.config['input_path'], self.db_config)
+        self.dbclient = DBEngine(self.config, self.db_config)
         self.feature_gen = FeatureGenerator(self.config['feature_generation'],
                                             self.seed)
         self.evaluator = ModelEvaluator(self.config, self.dbclient, self.seed,
@@ -183,36 +182,36 @@ class Experiment():
 
             data = (train_x, train_y, test_x, test_y)
 
-            # Iterate through config models
-            for sk_model, param_dict in model_config.items():
-                click.echo("Starting model: %s" % (sk_model))
-                param_combinations = list(ParameterGrid(param_dict))
+            # # Iterate through config models
+            # for sk_model, param_dict in model_config.items():
+            #     click.echo("Starting model: %s" % (sk_model))
+            #     param_combinations = list(ParameterGrid(param_dict))
 
-                # For this model, iterate through parameter combinations
-                for params in param_combinations:
-                    clf = self.evaluator.train(sk_model, params, data)
-                    y_hats = self.evaluator.predict(clf, test_x)
-                    probs = self.evaluator.get_predicted_probabilities(clf, test_x)
-                    baseline = self.evaluator.get_baseline(train_y)
-                    evl = self.evaluator.evaluate(clf, data, y_hats, probs,
-                        split, sk_model, params, baseline)
+            #     # For this model, iterate through parameter combinations
+            #     for params in param_combinations:
+            #         clf = self.evaluator.train(sk_model, params, data)
+            #         y_hats = self.evaluator.predict(clf, test_x)
+            #         probs = self.evaluator.get_predicted_probabilities(clf, test_x)
+            #         baseline = self.evaluator.get_baseline(train_y)
+            #         evl = self.evaluator.evaluate(clf, data, y_hats, probs,
+            #             split, sk_model, params, baseline)
 
-                    for best in evl:
-                        if (len(set(test_y) - set(y_hats)) != 0) or len(set(y_hats)) == 1:
-                            continue
-                        current_best_prec = best.get('results').get('metric_value')
+            #         for best in evl:
+            #             if (len(set(test_y) - set(y_hats)) != 0) or len(set(y_hats)) == 1:
+            #                 continue
+            #             current_best_prec = best.get('results').get('metric_value')
 
-                        if split_best_prec == 0:
-                            split_best_prec = current_best_prec
-                            split_best_models.append(best)
+            #             if split_best_prec == 0:
+            #                 split_best_prec = current_best_prec
+            #                 split_best_models.append(best)
 
-                        elif current_best_prec == split_best_prec:
-                            split_best_models.append(best)
+            #             elif current_best_prec == split_best_prec:
+            #                 split_best_models.append(best)
 
-                        elif current_best_prec > split_best_prec:
-                            split_best_prec = current_best_prec
-                            split_best_models = [best]
+            #             elif current_best_prec > split_best_prec:
+            #                 split_best_prec = current_best_prec
+            #                 split_best_models = [best]
 
-            print('Number of best splits',len(split_best_models))
-            self.process_best_models(split_best_models)
+            # print('Number of best splits',len(split_best_models))
+            # self.process_best_models(split_best_models)
 

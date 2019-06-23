@@ -11,4 +11,4 @@ build/*
 examples/donors/results/*
 examples/donors/data_tiny.csv
 examples/donors/visualization/*
-examples/donors/features_store/*
+examples/donors/feature_data/*

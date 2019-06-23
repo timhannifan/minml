@@ -9,20 +9,23 @@ RESULTS_FIELDS = 'train_start,train_end,test_start,test_end,model_name,params,me
 
 
 class DBEngine:
-    def __init__(self, project_path, data_file_path, db_config):
+    def __init__(self, exp_config, db_config):
         self.dbname = db_config['db']
         self.dbhost = db_config['host']
         self.dbport = db_config['port']
         self.dbusername = db_config['user']
         self.dbpasswd = db_config['pass']
         self.conn = None
-        self.project_path = project_path
-        self.clean_sql = self.project_path + 'config_db_clean.sql'
-        self.semantic_sql = self.project_path + 'config_db_semantic.sql'
-        self.insert_sql = self.project_path + 'config_db_insert.sql'
-        self.drop_and_create_sql = self.project_path + 'config_db_create.sql'
-        self.index_sql = self.project_path + 'config_db_index.sql'
-        self.data_path = data_file_path
+        self.experiment_config = exp_config
+        self.config = db_config
+
+        self.config_path = self.experiment_config['config_path']
+        self.clean_sql = self.config_path + 'config_db_clean.sql'
+        self.semantic_sql = self.config_path + 'config_db_semantic.sql'
+        self.insert_sql = self.config_path + 'config_db_insert.sql'
+        self.drop_and_create_sql = self.config_path + 'config_db_create.sql'
+        self.index_sql = self.config_path + 'config_db_index.sql'
+        self.data_path = self.experiment_config['input_path']
 
     def get_split(self, start, end):
         cur = self.get_db_cursor()
