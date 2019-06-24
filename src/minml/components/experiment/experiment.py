@@ -83,8 +83,7 @@ class Experiment():
         return {x[0]:x[1] for x in [('train_cols',train_cols),
                                 ('train_data', train),
                                 ('test_cols',test_cols),
-                                ('test_data', test),
-                               ]}
+                                ('test_data', test)]}
 
 
     def save_train_test(self, dfs, split):
@@ -107,6 +106,7 @@ class Experiment():
     def feature_fname(self, split_num, te_or_tr, x_or_y):
         return '%s%s_%s_%s.csv'%(self.save_feature_data_to, te_or_tr,
                                  x_or_y, split_num)
+
 
     def process_best_models(self, split_best_models):
         # Generate graphs for the best models in the split
@@ -135,7 +135,6 @@ class Experiment():
 
 
     def run(self):
-
         for i, split in enumerate(self.splits):
             if 'limit_splits_run' in self.config and isinstance(self.config['limit_splits_run'], list):
                 if i not in self.config['limit_splits_run']:
@@ -147,23 +146,18 @@ class Experiment():
 
             if self.config.get('use_exising_train_test'):
                 train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
-                print(self.feature_fname(i, 'train', 'x'))
                 train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
                 test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
                 test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
                 train_y = train_y['result']
                 test_y = test_y['result']
-                print('!!!train_x, train_y shapes: ',train_x.shape, train_y.shape)
-                print('!!!test_x, test_y shapes: ',test_x.shape, test_y.shape)
             else:
                 data_dict = self.build_train_test(split)
-
                 featurized = self.feature_gen.featurize(data_dict)
                 train_x, train_y, test_x, test_y = featurized
                 self.save_train_test([train_x, train_y, test_x, test_y], i)
 
             data = (train_x, train_y, test_x, test_y)
-
 
             # Iterate through config models
             if 'skip_models' in self.config and self.config['skip_models']:

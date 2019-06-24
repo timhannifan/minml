@@ -15,63 +15,71 @@ class FeatureGenerator():
         self.feature_config = feature_config
         if random_seed is not None:
             self.seed = random_seed
-        self.one_hot_encoder = OneHotEncoder()
-
-    def featurize_trn_data(self, df):
+        self.one_hot_dict = {}
 
 
-        return (df, 'returned_processor')
-
-    def featurize_test_data(self, df, fit_processors):
-        print('Featurizing test data: ', fit_processors)
-        return df
-
-
-    def featurize(self, data_dict):
-        trn_cols, trn_data, test_cols, test_data = tuple(data_dict.values())
-
-
-        train_df = pd.DataFrame(trn_data, columns=trn_cols)
-        train_y = train_df['result']
-        train_x = train_df.drop('result', axis=1)
-        featurized_trn_X, fit_processors = self.featurize_trn_data(train_x)
-
-        test_df = pd.DataFrame(test_data, columns=test_cols)
-        test_y = test_df['result']
-        test_x = test_df.drop('result', axis=1)
-        featurized_test_X = self.featurize_test_data(test_x, fit_processors)
-
-        print('train_x, train_y shapes: ',train_x.shape, train_y.shape)
-        print('test_x, test_y shapes: ',test_x.shape, test_y.shape)
-
-
-
-
-        return (train_x, train_y, test_x, test_y)
-
-    def transform(self, df):
-        click.echo(f"Starting feature generation")
+    def featurize_data(self, df, train_or_test):
         for task in self.feature_config:
             for task_type, target_list in task.items():
                 if task_type == 'categoricals':
-                    df = self.process_cat(target_list, df)
+                    for col in target_list:
+                        col_name = col['column']
+                        df = self.impute_na(df, col_name,
+                                            col['imputation'],
+                                            'categorical')
+
+                        # this adds col encoder to self.one_hot_dict
+                        df = self.process_one_hot(df, col_name,
+                                                  train_or_test)
                 elif task_type == 'numeric':
                     df = self.process_num(target_list, df)
                 elif task_type == 'binary':
                     df = self.process_binary(target_list, df)
                 elif task_type == 'drop':
                     df.drop(target_list, axis=1,inplace=True)
-        return df
-
-    def process_cat(self, target_list, df):
-        for col in target_list:
-            col_name = col['column']
-            df = self.impute_na(df, col_name,
-                                col['imputation'], 'categorical')
-
-            df = self.process_one_hot(df, col_name)
 
         return df
+
+
+    def process_one_hot(self, df, col_name, train_or_test):
+        reshaped = self.reshape_series(df[col_name])
+
+        if train_or_test == 'train':
+            encoder = OneHotEncoder(handle_unknown='ignore').fit(reshaped)
+            raw_names = encoder.categories_
+            col_names = ['%s_%s'%(col_name, x) for x in
+                           raw_names[0]]
+            e_props = {
+                'encoder': encoder,
+                'col_names': col_names
+            }
+            self.one_hot_dict[col_name] = e_props
+        else:
+            col_encoder_dict = self.one_hot_dict[col_name]
+            encoder = col_encoder_dict['encoder']
+            col_names = col_encoder_dict['col_names']
+
+        labels = encoder.transform(reshaped)
+        new = df.join(pd.DataFrame(labels.todense(), columns=col_names))
+        new.drop(col_name, axis=1,inplace=True)
+
+        return new
+
+
+    def featurize(self, data_dict):
+        trn_cols, trn_data, test_cols, test_data = tuple(data_dict.values())
+
+        train_df = pd.DataFrame(trn_data, columns=trn_cols)
+        train_y = train_df['result']
+        train_x = train_df.drop('result', axis=1)
+        featurized_trn_X = self.featurize_data(train_x, 'train')
+
+        test_df = pd.DataFrame(test_data, columns=test_cols)
+        test_y = test_df['result']
+        test_x = test_df.drop('result', axis=1)
+        featurized_test_X = self.featurize_data(test_x, 'test')
+
+        return (featurized_trn_X, train_y, featurized_test_X, test_y)
 
     def process_binary(self, target_list, df):
         for col in target_list:
@@ -94,18 +102,6 @@ class FeatureGenerator():
 
         return df
 
-    def process_one_hot(self, df, col_name):
-        reshaped = self.reshape_series(df[col_name])
-        self.one_hot_encoder.fit(reshaped)
-        raw_names = self.one_hot_encoder.categories_
-        clean_names = ['%s_%s'%(col_name, x) for x in raw_names[0]]
-        labels = self.one_hot_encoder.transform(reshaped)
-        new = df.join(pd.DataFrame(labels.todense(), columns=clean_names))
-        new.drop(col_name, axis=1,inplace=True)
-
-        return new
-
-
     def scale_numeric_col(self, df, col_name):
         reshaped = self.reshape_series(df[col_name])
         scaler.fit(reshaped)
@@ -118,7 +114,6 @@ class FeatureGenerator():
         return arr.reshape((arr.shape[0], 1))
 
     def impute_na(self, df, col_name, config, f_type):
-
         series = df[col_name]
         missing = df[series.isna()].shape[0]
 
@@ -144,5 +139,3 @@ class FeatureGenerator():
 
         return df
 
-
-# features_df.reset_index(drop=True, inplace=True)

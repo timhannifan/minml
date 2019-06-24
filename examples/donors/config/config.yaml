@@ -12,8 +12,8 @@ generate_csv: True
 drop_existing_train_test: True
 use_exising_train_test: False
 limit_splits_run: [0]
-load_db: False
-skip_models: True
+load_db: True
+skip_models: False
 
 random_seed: 23895478
 
@@ -108,31 +108,31 @@ feature_generation:
             -
                 column: 'poverty'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'grade'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'type'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'primary_subject'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'county'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'state'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
             -
                 column: 'city'
                 imputation:
-                    fill_value: 'other'
+                    fill_value: 'other_missing'
     -
         numeric:
             -
