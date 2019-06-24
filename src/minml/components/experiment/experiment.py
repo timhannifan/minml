@@ -73,6 +73,7 @@ class Experiment():
 
 
     def build_train_test(self, split):
+        print('\tGetting data from DB for this split')
         train_start, train_end, test_start, test_end = split
         train_cols, train = self.dbclient.get_split(train_start, train_end)
         test_cols, test = self.dbclient.get_split(test_start, test_end)
@@ -93,6 +94,7 @@ class Experiment():
 
 
     def save_train_test(self, dfs, split):
+        print('\tWriting featurized dfs to disk')
         if not os.path.exists(self.save_feature_data_to):
             os.makedirs(self.save_feature_data_to)
 
@@ -103,7 +105,7 @@ class Experiment():
                       index=False)
         for i, df in enumerate(dfs):
             _write(i, df, split)
-
+        print('\tCompleted writing featurized dfs to disk')
 
     def feature_fname(self, split_num, te_or_tr, x_or_y):
         return '%s%s_%s_%s.csv'%(self.save_feature_data_to, te_or_tr,

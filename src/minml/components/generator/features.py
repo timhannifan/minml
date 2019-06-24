@@ -1,4 +1,3 @@
-import click
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
@@ -18,7 +17,8 @@ class FeatureGenerator():
         self.one_hot_dict = {}
 
 
-    def featurize_data(self, df, train_or_test):
+    def process_x_data(self, df, train_or_test):
+        print('\t\tFeaturizing %s df of size %s'%(train_or_test, df.shape))
         for task in self.feature_config:
             for task_type, target_list in task.items():
                 if task_type == 'categoricals':
@@ -36,7 +36,7 @@ class FeatureGenerator():
                     df = self.process_binary(target_list, df)
                 elif task_type == 'drop':
                     df.drop(target_list, axis=1, inplace=True)
-
+        print('\t\tCompleted featurization of %s df with size %s'%(train_or_test,df.shape))
         return df
 
 
@@ -66,18 +66,19 @@ class FeatureGenerator():
 
 
     def featurize(self, data_dict):
+        print('\tBeginning featurization')
         trn_cols, trn_data, test_cols, test_data = tuple(data_dict.values())
 
         train_df = pd.DataFrame(trn_data, columns=trn_cols)
         train_y = train_df['result']
         train_x = train_df.drop('result', axis=1)
-        featurized_trn_X = self.featurize_data(train_x, 'train')
-
+        featurized_trn_X = self.process_x_data(train_x, 'train')
         test_df = pd.DataFrame(test_data, columns=test_cols)
         test_y = test_df['result']
         test_x = test_df.drop('result', axis=1)
-        featurized_test_X = self.featurize_data(test_x, 'test')
+        featurized_test_X = self.process_x_data(test_x, 'test')
 
+        print('\tCompleted featurization')
         return (featurized_trn_X, train_y, featurized_test_X, test_y)
 
     def process_binary(self, target_list, df):
