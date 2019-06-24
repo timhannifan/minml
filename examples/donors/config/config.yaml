@@ -14,8 +14,9 @@ use_exising_train_test: False
 limit_splits_run: [0]
 load_db: True
 skip_models: True
+sample_fraction: 0.25
 
-random_seed: 23895478
+random_seed: 112019
 
 user_metadata:
   author: 'Tim Hannifan'

@@ -23,7 +23,7 @@ class Experiment():
         self.config = experiment_config
         self.db_config = db_config
         self.save_to = self.config['results_path']
-        self.seed = self.config.get('random_seed', 123456)
+        self.seed = self.config.get('random_seed', 112019)
         self.res_dir = self.config['model_results_path']
         self.viz_dir = self.config['viz_path']
         self.save_feature_data_to = self.config['features_path']
@@ -75,10 +75,22 @@ class Experiment():
     def build_train_test(self, split):
         train_start, train_end, test_start, test_end = split
 
-        train_cols, train = self.dbclient.get_split(train_start,
-                                                      train_end)
+        train_cols, train = self.dbclient.get_split(train_start, train_end)
         test_cols, test = self.dbclient.get_split(test_start, test_end)
 
+
+        if 'sample_fraction' in self.config:
+            frac_data = self.config['sample_fraction']
+            train_limited = pd.DataFrame(train).sample(frac=frac_data,
+                                                       random_state=self.seed)
+            test_limited = pd.DataFrame(test).sample(frac=frac_data,
+                                                       random_state=self.seed)
+
+
+            print('pre',len(train))
+            train = train_limited.values
+            print('post',len(train))
+            test = test_limited.values
         return {x[0]:x[1] for x in [('train_cols',train_cols),
                                 ('train_data', train),
                                 ('test_cols',test_cols),
