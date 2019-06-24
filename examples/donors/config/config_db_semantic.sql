@@ -6,12 +6,17 @@ create table semantic.entities as (
     with entities as (
     select
         distinct entity_id::varchar,
+        latitude,
+        longitude,
         city,
         state,
+        metro,
+        district,
         county,
         primary_subject,
         poverty::varchar,
         grade,
+        teacher_prefix,
         (min(date) over (partition by entity_id))::timestamp as start_time,
         now()::timestamp as end_time
 

@@ -9,11 +9,11 @@ model_results_path: "../../examples/donors/model/"
 
 generate_graphs: False
 generate_csv: True
-drop_existing_train_test: False
-use_exising_train_test: True
+drop_existing_train_test: True
+use_exising_train_test: False
 limit_splits_run: [0]
-load_db: False
-skip_models: False
+load_db: True
+skip_models: True
 
 random_seed: 23895478
 
@@ -124,7 +124,7 @@ feature_generation:
                 imputation:
                     fill_value: 'other_missing'
             -
-                column: 'county'
+                column: 'city'
                 imputation:
                     fill_value: 'other_missing'
             -
@@ -132,7 +132,19 @@ feature_generation:
                 imputation:
                     fill_value: 'other_missing'
             -
-                column: 'city'
+                column: 'metro'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'district'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'county'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'teacher_prefix'
                 imputation:
                     fill_value: 'other_missing'
     -
@@ -144,6 +156,16 @@ feature_generation:
                 scale: False
             -
                 column: 'price'
+                imputation:
+                    strategy: 'median'
+                scale: True
+            -
+                column: 'latitude'
+                imputation:
+                    strategy: 'median'
+                scale: False
+            -
+                column: 'longitude'
                 imputation:
                     strategy: 'median'
                 scale: False
