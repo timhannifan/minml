@@ -6,6 +6,7 @@ create table cleaned.projects as (
         select
             projectid::varchar as event_id,
             teacher_acctid::varchar as entity_id,
+            schoolid,
             school_latitude as latitude,
             school_longitude as longitude,
             btrim(replace(regexp_replace(btrim(lower(school_city)), '\s{2,}|,|\.',''), $$'$$,'')) as city,

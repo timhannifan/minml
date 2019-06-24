@@ -6,6 +6,7 @@ create table semantic.entities as (
     with entities as (
     select
         distinct entity_id::varchar,
+        schoolid,
         latitude,
         longitude,
         city,

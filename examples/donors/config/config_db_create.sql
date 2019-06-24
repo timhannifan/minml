@@ -34,7 +34,7 @@ CREATE TABLE raw (
 CREATE TABLE raw_projects (
     projectid VARCHAR(50) PRIMARY KEY UNIQUE,
     teacher_acctid VARCHAR,
-    -- schoolid VARCHAR(50),
+    schoolid VARCHAR,
     -- school_ncesid DECIMAL,
     school_latitude DECIMAL,
     school_longitude DECIMAL,

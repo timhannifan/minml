@@ -147,6 +147,10 @@ feature_generation:
                 column: 'teacher_prefix'
                 imputation:
                     fill_value: 'other_missing'
+            -
+                column: 'schoolid'
+                imputation:
+                    fill_value: 'other_missing'
     -
         numeric:
             -
