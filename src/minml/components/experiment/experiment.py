@@ -74,10 +74,8 @@ class Experiment():
 
     def build_train_test(self, split):
         train_start, train_end, test_start, test_end = split
-
         train_cols, train = self.dbclient.get_split(train_start, train_end)
         test_cols, test = self.dbclient.get_split(test_start, test_end)
-
 
         if 'sample_fraction' in self.config:
             frac_data = self.config['sample_fraction']
@@ -85,12 +83,9 @@ class Experiment():
                                                        random_state=self.seed)
             test_limited = pd.DataFrame(test).sample(frac=frac_data,
                                                        random_state=self.seed)
-
-
-            print('pre',len(train))
             train = train_limited.values
-            print('post',len(train))
             test = test_limited.values
+
         return {x[0]:x[1] for x in [('train_cols',train_cols),
                                 ('train_data', train),
                                 ('test_cols',test_cols),
@@ -102,10 +97,6 @@ class Experiment():
             os.makedirs(self.save_feature_data_to)
 
         def _write(i, df, split):
-            # df.to_csv(self.save_feature_data_to +
-                      # self.tt_names[i]+'_' + str(split) + '.csv')
-            print('writing', self.feature_fname(split, self.tt_names[i][0],
-                                             self.tt_names[i][1]))
             df.to_csv(self.feature_fname(split, self.tt_names[i][0],
                                              self.tt_names[i][1]),
                       header=True,
