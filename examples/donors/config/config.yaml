@@ -9,10 +9,10 @@ model_results_path: "../../examples/donors/model/"
 
 generate_graphs: False
 generate_csv: True
-drop_existing_train_test: True
-use_exising_train_test: False
+drop_existing_train_test: False
+use_exising_train_test: True
 limit_splits_run: [0]
-load_db: True
+load_db: False
 skip_models: False
 
 random_seed: 23895478
@@ -86,19 +86,21 @@ model_config:
 
 scoring:
     ## Test
-    # testing_metric_groups:
-    #     -
-    #         metrics: ['precision', 'recall']
-    #         thresholds:
-    #             percentiles: [1.0,5.0,10.0,20.0]
-    #             top_n: [10]
-    ## Production
     testing_metric_groups:
         -
-            metrics: ['precision', 'recall']
+            metrics: ['precision']
             thresholds:
-                percentiles: [ 1, 2, 5, 10, 20, 30, 50]
-                top_n: [10]
+                percentiles: [1,5,10]
+                top_n: [50]
+    ## Production
+    # testing_metric_groups:
+    #     -
+    #         metrics: ['accuracy']
+    #     -
+    #         metrics: ['precision', 'recall', 'f1', 'roc_auc']
+    #         thresholds:
+    #             percentiles: [ 1, 2, 5, 10, 20, 30, 50]
+    #             top_n: [50,100]
 
 feature_generation:
     -

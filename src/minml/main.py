@@ -9,10 +9,9 @@ import click
 from components.experiment import Experiment
 
 class Minml():
-    def __init__(self, config, db_config, load_db):
+    def __init__(self, config, db_config):
         self.config = config
         self.db_config = db_config
-        self.load_db = load_db
 
     def run(self):
         click.echo(f"Running Minml with config: {self.config}")
@@ -23,8 +22,7 @@ class Minml():
 
         exp = Experiment(
             experiment_config=experiment_con,
-            db_config=db_con,
-            load_db=self.load_db)
+            db_config=db_con)
         exp.run()
 
 if __name__ == "__main__":
@@ -34,9 +32,7 @@ if __name__ == "__main__":
                         help=('Model config path'))
     parser.add_argument('--db', dest='db', type=str,
                         help=('DB config path'))
-    parser.add_argument('--load_db', dest='load_db', type=bool, default=0,
-                        help=('Select this option to initalize DB'))
     args = parser.parse_args()
 
-    m = Minml(str(args.config), str(args.db), bool(args.load_db))
+    m = Minml(str(args.config), str(args.db))
     m.run()

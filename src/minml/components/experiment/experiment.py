@@ -19,10 +19,9 @@ warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 warnings.filterwarnings(action='ignore', category=ConvergenceWarning)
 
 class Experiment():
-    def __init__(self, experiment_config, db_config, load_db):
+    def __init__(self, experiment_config, db_config):
         self.config = experiment_config
         self.db_config = db_config
-        self.load_db = load_db
         self.save_to = self.config['results_path']
         self.seed = self.config.get('random_seed', 123456)
         self.res_dir = self.config['model_results_path']

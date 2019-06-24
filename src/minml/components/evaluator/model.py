@@ -41,33 +41,30 @@ class ModelEvaluator(object):
 
     def evaluate(self,clf, data, y_hats, probs, split, sk_model, params, baseline):
         score_config = self.config['scoring']
+        test_metric_groups = score_config['testing_metric_groups']
         train_x, train_y, test_x, test_y = data
         tr_s, tr_e, te_s, te_e = split
-        testing_metric_list = score_config['testing_metric_groups']
-
-        best_at_k = 0.0
+        best_at_thresh = 0.0
         best = []
-        for metric_dict in testing_metric_list:
-            # E.g. precision@, recall@
-            metrics = metric_dict['metrics']
 
-            if 'thresholds' in metric_dict:
-                thresh = metric_dict['thresholds']
-                if 'percentiles' in thresh:
+        for group in test_metric_groups:
+            metrics = group['metrics']
 
-                    for k in thresh['percentiles']:
+            if 'thresholds' in group:
+                if 'percentiles' in group['thresholds']:
+                    for pct in group['thresholds']['percentiles']:
                         for m in metrics:
-                            m_at_k = self.metrics_at_k(k, test_y, probs, m)
-
+                            m_at_thresh = self.metrics_at_thresh(pct, test_y,
+                                                              probs, m)
                             report = [tr_s, tr_e, te_s, te_e, sk_model,
-                                      params, m, k, m_at_k]
+                                      params, m, pct, m_at_thresh]
 
                             eval_dict = {
                                 'report': report,
                                 'results': {
                                     'metric': m,
-                                    'threshold': k,
-                                    'metric_value': m_at_k,
+                                    'threshold': pct,
+                                    'metric_value': m_at_thresh,
                                     'baseline': baseline
                                 },
                                 'model': {
@@ -90,26 +87,22 @@ class ModelEvaluator(object):
                                 }
                             }
                             if m == 'precision':
-                                if best_at_k == 0:
-                                    best_at_k = m_at_k
+                                if best_at_thresh == 0:
+                                    best_at_thresh = m_at_thresh
                                     best.append(eval_dict)
-                                elif m_at_k == best_at_k:
+                                elif m_at_thresh == best_at_thresh:
                                     best.append(eval_dict)
-                                elif m_at_k > best_at_k:
-                                    best_at_k = m_at_k
+                                elif m_at_thresh > best_at_thresh:
+                                    best_at_thresh = m_at_thresh
                                     best = [eval_dict]
 
                             self.dbclient.write_result(report)
 
 
-                # if 'top_n' in thresh:
-                #     for n in thresh['top_n']:
-                #         for m in metrics:
-                #             pass
+                elif 'top_n' in group['thresholds']:
+                    for n in group['thresholds']['top_n']:
+                        print('Calculating top_n', n)
 
-            # else:
-            #     print('no thresholds', metric)
-            #     pass
 
         print('MODEL EVALUATE FOUND %s BEST MODELS'%(len(best)))
         return best
@@ -122,7 +115,7 @@ class ModelEvaluator(object):
 
 
 
-    def metrics_at_k(self, k, test_y, probs, metric_name):
+    def metrics_at_thresh(self, k, test_y, probs, metric_name):
         """
         Predict based on predicted probabilities and population threshold k,
         where k is the percentage of population at the highest probabilities to
@@ -130,24 +123,25 @@ class ModelEvaluator(object):
         higher than (1- k/100) quantile as positive, and evaluate the precision.
         Orginally written by https://github.com/KunyuHe/ML-Pipeline-for-Crowdfunding-Project-Outcome-Prediction/blob/master/codes/train.py
         Inputs:
+            - test_y (array): of true labels.
             - probs (array): predicted probabilities on the validation
                 set.
-            - test_y (array): of true labels.
+            metic_name: (str) 'precision', 'recall', 'f1', 'roc_auc'
         Returns:
-            (float) precision score of our model at population threshold k.
+            (float) metric score of model at population threshold k.
         """
         idx = np.argsort(probs)[::-1]
         sorted_prob, sorted_test_y = probs[idx], test_y[idx]
 
         cutoff_index = int(len(sorted_prob) * (k / 100.0))
-        predictions_at_k = [1 if x < cutoff_index else 0 for x in
+        predictions_at_thresh = [1 if x < cutoff_index else 0 for x in
                             range(len(sorted_prob))]
 
         skmetric = self.metric_map[metric_name]
         if metric_name == "roc_auc":
             return skmetric(sorted_test_y, sorted_prob)
         else:
-            return skmetric(sorted_test_y, predictions_at_k)
+            return skmetric(sorted_test_y, predictions_at_thresh)
 
 
     def get_predicted_probabilities(self, clf, test_x):

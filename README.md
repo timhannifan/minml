@@ -19,10 +19,10 @@ pip install -r requirements.txt
 cd src/minml
 
 ipython3
-run main --config "../../examples/donors/config/config.yaml" --db "../../examples/donors/config/config_db.yaml" --load_db 1
+run main --config "../../examples/donors/config/config.yaml" --db "../../examples/donors/config/config_db.yaml"
 ```
 
-Excluding the argument --load_db prevents table generation and re-reading the csv data. After the first run, run without --load_db to improve performance. This parameter needs to be added if it is the first run, your raw data changes, or you change any database-related configurations via SQL or YAML files.
+In the main config file there is a `load_db` parameter that prevents table generation and re-reading csv data. After the first run, run without this set to False to improve performance. In addition, featurized datasets are saved to  the project directory using a toggle in the main config, which allows you to avoid re-generating features on a dataset.
 
 ### Requirements
 See `requirements.txt` for required packages. The current stack requires:

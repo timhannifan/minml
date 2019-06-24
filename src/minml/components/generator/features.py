@@ -28,7 +28,6 @@ class FeatureGenerator():
                                             col['imputation'],
                                             'categorical')
 
-                        # this adds col encoder to self.one_hot_dict
                         df = self.process_one_hot(df, col_name,
                                                   train_or_test)
                 elif task_type == 'numeric':
@@ -36,7 +35,7 @@ class FeatureGenerator():
                 elif task_type == 'binary':
                     df = self.process_binary(target_list, df)
                 elif task_type == 'drop':
-                    df.drop(target_list, axis=1,inplace=True)
+                    df.drop(target_list, axis=1, inplace=True)
 
         return df
 
