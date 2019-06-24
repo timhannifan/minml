@@ -1,14 +1,19 @@
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data/data_tiny.csv"
+input_path: "../../examples/donors/data/data_small.csv"
 project_path: "../../examples/donors/"
+results_path: "../../examples/donors/results/"
 viz_path: "../../examples/donors/visualization/"
 features_path: "../../examples/donors/feature_data/"
 config_path: "../../examples/donors/config/"
+model_results_path: "../../examples/donors/model/"
 
-generate_graphs: True
+generate_graphs: False
 generate_csv: True
 drop_existing_train_test: True
 use_exising_train_test: False
+limit_splits_run: [0]
+load_db: False
+skip_models: True
 
 random_seed: 23895478
 

@@ -12,3 +12,5 @@ examples/donors/results/*
 examples/donors/data_tiny.csv
 examples/donors/visualization/*
 examples/donors/feature_data/*
+*.ipynb_checkpoints
+*.sublime-workspace

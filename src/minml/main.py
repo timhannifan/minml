@@ -1,3 +1,7 @@
+# Author:  Tim Hannifan <hannifan@gmail.com>
+# License: MIT
+
+
 import argparse
 import yaml
 import click

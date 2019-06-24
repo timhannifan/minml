@@ -17,6 +17,37 @@ class FeatureGenerator():
             self.seed = random_seed
         self.one_hot_encoder = OneHotEncoder()
 
+    def featurize_trn_data(self, df):
+
+
+        return (df, 'returned_processor')
+
+    def featurize_test_data(self, df, fit_processors):
+        print('Featurizing test data: ', fit_processors)
+        return df
+
+
+    def featurize(self, data_dict):
+        trn_cols, trn_data, test_cols, test_data = tuple(data_dict.values())
+
+
+        train_df = pd.DataFrame(trn_data, columns=trn_cols)
+        train_y = train_df['result']
+        train_x = train_df.drop('result', axis=1)
+        featurized_trn_X, fit_processors = self.featurize_trn_data(train_x)
+
+        test_df = pd.DataFrame(test_data, columns=test_cols)
+        test_y = test_df['result']
+        test_x = test_df.drop('result', axis=1)
+        featurized_test_X = self.featurize_test_data(test_x, fit_processors)
+
+        print('train_x, train_y shapes: ',train_x.shape, train_y.shape)
+        print('test_x, test_y shapes: ',test_x.shape, test_y.shape)
+
+
+
+
+        return (train_x, train_y, test_x, test_y)
 
     def transform(self, df):
         click.echo(f"Starting feature generation")
@@ -112,3 +143,6 @@ class FeatureGenerator():
                 df[col_name] = imp_mean.transform(reshaped)
 
         return df
+
+
+# features_df.reset_index(drop=True, inplace=True)
