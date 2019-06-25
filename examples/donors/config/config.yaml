@@ -1,5 +1,5 @@
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data/data_small.csv"
+input_path: "../../examples/donors/data/data_tiny.csv"
 project_path: "../../examples/donors/"
 results_path: "../../examples/donors/results/"
 viz_path: "../../examples/donors/visualization/"
@@ -10,16 +10,17 @@ model_results_path: "../../examples/donors/model/"
 generate_graphs: False
 generate_csv: True
 drop_existing_train_test: True
-use_exising_train_test: False
-limit_splits_run: [0]
+# use_exising_train_test: False
+build_features: True
 load_db: True
-skip_models: True
+run_models: True
+limit_splits_run: [2]
 sample_fraction: 1
 random_seed: 112019
 
 user_metadata:
   author: 'Tim Hannifan'
-  etl_date: '2019-06-22'
+  etl_date: '2019-06-24'
 
 temporal_config:
     start_time: '2012-01-01'
@@ -27,84 +28,87 @@ temporal_config:
     prediction_windows: [6]
     model_update_frequency: 6
     unknown_outcome_gap: 60
-    aggregation_lengths: [6]
+    # aggregation_lengths: [6] # Todo
 
 label_config:
     name: 'not_funded'
     include_missing_labels_in_train_as: False
 
 model_config:
-    ## Test
-    'sklearn.tree.DecisionTreeClassifier':
-        min_samples_split: [0.25]
-        max_depth: [2]
-    'sklearn.svm.LinearSVC':
-        penalty: [l2]
-        C: [0.1,0.5]
-    'sklearn.linear_model.LogisticRegression':
-        penalty: [l2]
-        C: [0.1]
-        solver: [sag]
-        n_jobs: [-1]
-    'sklearn.ensemble.BaggingClassifier':
-        n_estimators: [10]
-        max_samples: [10]
-    'sklearn.ensemble.ExtraTreesClassifier':
-        n_estimators: [10]
-        criterion: [entropy]
-        max_depth: [10]
-        min_samples_split: [0.25]
-    'sklearn.neighbors.KNeighborsClassifier':
-        n_neighbors: [10]
-        weights: [distance]
-        metric: ["euclidean"]
-
     ## Production
-    # 'sklearn.tree.DecisionTreeClassifier':
-    #     min_samples_split: [0.05, 0.1]
-    #     max_depth: [1,5,10]
+    # 'xgboost':
+    #     param:
+    #         max_depth: 5
+    #         eta: 1
+            # objective: 'binary:logistic'
+    'sklearn.tree.DecisionTreeClassifier':
+        min_samples_split: [0.05, 0.1]
+        max_depth: [1,5,10]
     # 'sklearn.svm.LinearSVC':
     #     penalty: [l2]
     #     C: [5,7,10.0]
+    # 'sklearn.neighbors.KNeighborsClassifier':
+    #     n_neighbors: [10,50,100]
+    #     weights: [uniform, distance]
+    #     metric: ["euclidean", "manhattan"]
     # 'sklearn.linear_model.LogisticRegression':
     #     penalty: [l2]
     #     C: [1,3,5,7,10]
     #     solver: [sag]
     #     n_jobs: [-1]
+    # 'sklearn.ensemble.RandomForestClassifier':
+    #     n_estimators: [100,200,1000]
+    #     max_samples: [10,20]
     # 'sklearn.ensemble.BaggingClassifier':
     #     n_estimators: [100,200,1000]
     #     max_samples: [10,20]
+
+    ## Test
+    # 'sklearn.tree.DecisionTreeClassifier':
+    #     min_samples_split: [0.25]
+    #     max_depth: [2]
+    # 'sklearn.svm.LinearSVC':
+    #     penalty: [l2]
+    #     C: [0.1,0.5]
+    # 'sklearn.linear_model.LogisticRegression':
+    #     penalty: [l2]
+    #     C: [0.1]
+    #     solver: [sag]
+    #     n_jobs: [-1]
+    # 'sklearn.ensemble.BaggingClassifier':
+    #     n_estimators: [10]
+    #     max_samples: [10]
     # 'sklearn.ensemble.ExtraTreesClassifier':
-    #     n_estimators: [100,500,1000]
+    #     n_estimators: [10]
     #     criterion: [entropy]
-    #     max_depth: [5,10,25]
-    #     min_samples_split: [0.2,0.4]
+    #     max_depth: [10]
+    #     min_samples_split: [0.25]
     # 'sklearn.neighbors.KNeighborsClassifier':
-    #     n_neighbors: [10,50,100]
-    #     weights: [uniform, distance]
-    #     metric: ["euclidean", "manhattan"]
+    #     n_neighbors: [10]
+    #     weights: [distance]
+    #     metric: ["euclidean"]
+
 
 scoring:
-    ## Test
+    ## Production
     testing_metric_groups:
         -
-            metrics: ['precision']
+            metrics: ['accuracy','precision', 'recall', 'f1', 'roc_auc']
             thresholds:
-                percentiles: [1,5,10]
-                top_n: [50]
-    ## Production
+                percentiles: [ 1, 2, 5, 10, 20, 30, 50]
+
+    ## Test
     # testing_metric_groups:
     #     -
-    #         metrics: ['accuracy']
-    #     -
-    #         metrics: ['precision', 'recall', 'f1', 'roc_auc']
+    #         metrics: ['precision']
     #         thresholds:
-    #             percentiles: [ 1, 2, 5, 10, 20, 30, 50]
-    #             top_n: [50,100]
+    #             percentiles: [1,5,10]
+    #             # top_n: [50] # Todo
+
 
 feature_generation:
     -
-        drop: ['entity_id','start_time','end_time','date']
+        drop: ['entity_id','start_time','end_time','date'] # Todo: date
     -
         categoricals:
             -
@@ -194,4 +198,3 @@ feature_generation:
                     strategy: 'constant'
                     fill_value: 0
                     missing_values: -1
-

@@ -20,8 +20,6 @@ def get_date_splits(config):
     model_update_frequency = config['model_update_frequency']
     #how long is the gap between the end of the training data and start of test, where the outcome is unknown? (days)
     unknown_outcome_gap = config['unknown_outcome_gap']
-    # over what length of time should we calculate aggregations
-    aggregation_lengths = config['aggregation_lengths']
 
     start_time_date = datetime.strptime(start_time, '%Y-%m-%d')
     end_time_date = datetime.strptime(end_time, '%Y-%m-%d')

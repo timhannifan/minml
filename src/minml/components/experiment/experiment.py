@@ -148,56 +148,55 @@ class Experiment():
             split_best_prec = 0.0
             split_best_models = []
 
-            if self.config.get('use_exising_train_test'):
-                train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
-                train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
-                test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
-                test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
-                train_y = train_y['result']
-                test_y = test_y['result']
-            else:
+            if self.config.get('build_features', True):
                 data_dict = self.build_train_test(split)
                 featurized = self.feature_gen.featurize(data_dict)
                 train_x, train_y, test_x, test_y = featurized
                 self.save_train_test([train_x, train_y, test_x, test_y], i)
 
+            train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
+            train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
+            test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
+            test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
+            train_y = train_y['result']
+            test_y = test_y['result']
+
             data = (train_x, train_y, test_x, test_y)
 
             # Iterate through config models
-            if 'skip_models' in self.config and self.config['skip_models']:
-                continue
+            if self.config.get('run_models', True):
+                for sk_model, param_dict in self.config['model_config'].items():
 
-            for sk_model, param_dict in self.config['model_config'].items():
-                click.echo("Starting model: %s" % (sk_model))
-                param_combinations = list(ParameterGrid(param_dict))
+                    click.echo("Starting model: %s" % (sk_model))
+                    param_combinations = list(ParameterGrid(param_dict))
 
-                # For current model, iterate through parameter combinations
-                for params in param_combinations:
-                    clf = self.evaluator.train(sk_model, params, data)
-                    y_hats = self.evaluator.predict(clf, test_x)
-                    probs = self.evaluator.get_predicted_probabilities(clf, test_x)
-                    baseline = self.evaluator.get_baseline(train_y)
-                    evl = self.evaluator.evaluate(clf, data, y_hats, probs,
-                        split, sk_model, params, baseline)
+                    # For current model, iterate through parameter combinations
+                    for params in param_combinations:
+                        clf = self.evaluator.train(sk_model, params, data)
+                        y_hats = self.evaluator.predict(clf, test_x)
+                        probs = self.evaluator.get_predicted_probabilities(clf, test_x)
+                        baseline = self.evaluator.get_baseline(train_y)
+                        evl = self.evaluator.evaluate(clf, data, y_hats, probs,
+                            split, sk_model, params, baseline)
 
-                    for best in evl:
-                        if (len(set(test_y) - set(y_hats)) != 0) or len(set(y_hats)) == 1:
-                            continue
-                        current_best_prec = best.get('results').get('metric_value')
+                        for best in evl:
+                            if (len(set(test_y) - set(y_hats)) != 0) or len(set(y_hats)) == 1:
+                                continue
+                            current_best_prec = best.get('results').get('metric_value')
 
-                        if split_best_prec == 0:
-                            split_best_prec = current_best_prec
-                            split_best_models.append(best)
+                            if split_best_prec == 0:
+                                split_best_prec = current_best_prec
+                                split_best_models.append(best)
 
-                        elif current_best_prec == split_best_prec:
-                            split_best_models.append(best)
+                            elif current_best_prec == split_best_prec:
+                                split_best_models.append(best)
 
-                        elif current_best_prec > split_best_prec:
-                            split_best_prec = current_best_prec
-                            split_best_models = [best]
+                            elif current_best_prec > split_best_prec:
+                                split_best_prec = current_best_prec
+                                split_best_models = [best]
 
-            print('Number of best splits',len(split_best_models))
-            self.process_best_models(split_best_models)
+                print('Number of best splits',len(split_best_models))
+                self.process_best_models(split_best_models)
 
             print('Experiment completed')
 

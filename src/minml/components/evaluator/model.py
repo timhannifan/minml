@@ -25,6 +25,11 @@ class ModelEvaluator(object):
 
     def train(self, sk_model, params, data):
         rich_train_x, train_y, rich_test_x, test_y = data
+        # print('trainycols', train_y.head())
+        # train_y.reset_index(drop=True, inplace=True)
+        # test_y = test_y.reset_index(drop=True, inplace=True)
+
+        # print(type(train_y))
 
         module_name, class_name = sk_model.rsplit(".", 1)
         module = importlib.import_module(module_name)
