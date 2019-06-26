@@ -38,9 +38,9 @@ To run a custom experiment with new data, one would need to replace the code wit
 
 ### Experiment Results
 #### Postgres Table
-Results from model/parameter/threshold/time-split analysis are stored in a Postgres table named 'results'. A sample of the `best_model.sql` output is shown below.
+Results from model/parameter/threshold/time-split analysis are stored in a Postgres table named 'results'. A sample of the `results_exploration.sql` output is shown below.
 
-![Postgres](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/results.png)
+![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/top_10.png)
 
 #### Visualizations
 Precision/recall graphs vs population thresholds for the best performing models in each split are exported to a directory specified in the config. Visualizations can also be disabled in the config.
@@ -48,4 +48,4 @@ Precision/recall graphs vs population thresholds for the best performing models 
 ![Example:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/knn.png)
 
 
-Work is underway for further post-modeling evaluation and parameter tuning.
+Work is underway for post-modeling evaluation and parameter tuning.
