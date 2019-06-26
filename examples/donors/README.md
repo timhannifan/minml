@@ -17,14 +17,14 @@ Features are generated through a multistep process. The data pipeline contains t
 6. Repeat for all splits.
 
 
-#### Models:
+### Models:
 The models run for this experiment were decision trees, support vector machines, logistic regression, KNN, Bagging, Random Forests, and Gradient Boosting. Each model was run on a random sampling of 25% of the data across all time splits to roughly determine precision and training time.
 
 Decision trees largely followed baseline trends across all thresholds. The baseline we used was simply the proportion of projects that didn't get funded within 60 days vs the whole population of projects.
 
 KNN, bagging, and boosting showed promising precision levels, but training times were an order of magnitude longer than SVM or logistic regression, making them an less desirable long-term solution unless the infrastructure is in place to run the model on something other than a 16GB laptop.
 
-#### Precision/Recall Analysis
+### Precision/Recall Analysis
 Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds. The screenshot below shows our primary metric of interest, precision, for the top 10 performing models that were considered.
 <!-- ![KNN:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/knn.png) -->
 <!-- ![Bagging:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/bagging.png) -->
@@ -33,7 +33,7 @@ Coming soon...
 ##### SVM
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/svm.png)
 
-#### Parameter Grids and Tuning
+### Parameter Grids and Fine Tuning
 The experiment configuration defines which metrics and thresholds should be calculated for each model. In the case of our top performing models, the following configuration was used:
 ```
 model_config:
