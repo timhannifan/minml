@@ -1,5 +1,9 @@
+user_metadata:
+  author: 'Tim Hannifan'
+  etl_date: '2019-06-24'
+
 model_comment: 'donors choose example'
-input_path: "../../examples/donors/data/data_tiny.csv"
+input_path: "../../examples/donors/data/data_full.csv"
 project_path: "../../examples/donors/"
 results_path: "../../examples/donors/results/"
 viz_path: "../../examples/donors/visualization/"
@@ -7,20 +11,15 @@ features_path: "../../examples/donors/feature_data/"
 config_path: "../../examples/donors/config/"
 model_results_path: "../../examples/donors/model/"
 
-generate_graphs: False
+generate_graphs: True
 generate_csv: True
 drop_existing_train_test: True
-# use_exising_train_test: False
 build_features: True
 load_db: True
 run_models: True
 limit_splits_run: [2]
-sample_fraction: 1
+sample_fraction: 0.25
 random_seed: 112019
-
-user_metadata:
-  author: 'Tim Hannifan'
-  etl_date: '2019-06-24'
 
 temporal_config:
     start_time: '2012-01-01'
@@ -36,32 +35,25 @@ label_config:
 
 model_config:
     ## Production
-    # 'xgboost':
-    #     param:
-    #         max_depth: 5
-    #         eta: 1
-            # objective: 'binary:logistic'
     'sklearn.tree.DecisionTreeClassifier':
-        min_samples_split: [0.05, 0.1]
+        min_samples_split: [2,5,10]
         max_depth: [1,5,10]
-    # 'sklearn.svm.LinearSVC':
-    #     penalty: [l2]
-    #     C: [5,7,10.0]
+    'sklearn.svm.LinearSVC':
+        penalty: [l2]
+        C: [1,5,10]
     # 'sklearn.neighbors.KNeighborsClassifier':
-    #     n_neighbors: [10,50,100]
-    #     weights: [uniform, distance]
+    #     n_neighbors: [5]
     #     metric: ["euclidean", "manhattan"]
-    # 'sklearn.linear_model.LogisticRegression':
-    #     penalty: [l2]
-    #     C: [1,3,5,7,10]
-    #     solver: [sag]
-    #     n_jobs: [-1]
-    # 'sklearn.ensemble.RandomForestClassifier':
-    #     n_estimators: [100,200,1000]
-    #     max_samples: [10,20]
-    # 'sklearn.ensemble.BaggingClassifier':
-    #     n_estimators: [100,200,1000]
-    #     max_samples: [10,20]
+    'sklearn.linear_model.LogisticRegression':
+        penalty: [l2]
+        C: [1,5,10]
+        solver: [sag]
+        n_jobs: [-1]
+    'sklearn.ensemble.BaggingClassifier':
+        n_estimators: [100,500,1000]
+    'sklearn.ensemble.RandomForestClassifier':
+        n_estimators: [25,50]
+        max_depth: [10,20]
 
     ## Test
     # 'sklearn.tree.DecisionTreeClassifier':

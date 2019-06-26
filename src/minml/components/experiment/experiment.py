@@ -154,12 +154,14 @@ class Experiment():
                 train_x, train_y, test_x, test_y = featurized
                 self.save_train_test([train_x, train_y, test_x, test_y], i)
 
+            print('reading csv file', i)
             train_x  = pd.read_csv(self.feature_fname(i, 'train', 'x'))
             train_y  = pd.read_csv(self.feature_fname(i, 'train', 'y'))
             test_x  = pd.read_csv(self.feature_fname(i, 'test', 'x'))
             test_y  = pd.read_csv(self.feature_fname(i, 'test', 'y'))
             train_y = train_y['result']
             test_y = test_y['result']
+            print('done reading csv file', i)
 
             data = (train_x, train_y, test_x, test_y)
 
@@ -199,4 +201,3 @@ class Experiment():
                 self.process_best_models(split_best_models)
 
             print('Experiment completed')
-
