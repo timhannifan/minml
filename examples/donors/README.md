@@ -28,9 +28,10 @@ Early results indicated that the best candidates for further analysis would be S
 
 ### Performance Analysis
 Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds. The screenshot below shows our primary metric of interest, precision, for the top 10 performing models that were considered.
+
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/top_10.png)
 
-Precision/recall graphs for the top two types of models:
+### Precision/Recall for Top Two Model Types
 
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/svm.png)
 ##### Logistic Regression
