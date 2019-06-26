@@ -17,7 +17,7 @@ Features are generated through a multistep process. The data pipeline contains t
 6. Repeat for all splits.
 
 
-### Models:
+### Models
 The models run for this experiment were decision trees, support vector machines, logistic regression, KNN, random forests, bagging, and gradient boosting. Each model was run on a random sampling of 25% of the data across all time splits to roughly determine precision and training time.
 
 Decision trees largely followed baseline trends across all thresholds. The baseline we used was simply the proportion of projects that didn't get funded within 60 days vs the whole population of projects.
