@@ -25,24 +25,40 @@ Decision trees largely followed baseline trends across all thresholds. The basel
 KNN, bagging, and boosting showed promising precision levels, but training times were an order of magnitude longer than SVM or logistic regression, making them an less desirable long-term solution unless the infrastructure is in place to run the model on something other than a 16GB laptop.
 
 #### Precision/Recall Analysis
- Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds.
+Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds. The screenshot below shows our primary metric of interest, precision, for the top 10 performing models that were considered.
 <!-- ![KNN:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/knn.png) -->
 <!-- ![Bagging:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/bagging.png) -->
 ##### Logistic Regression
+Coming soon...
 ##### SVM
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/svm.png)
-<!-- ![Random Forest:](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/random_forest.png) -->
 
 #### Parameter Grids and Tuning
-The experiment configuration defines which metrics and thresholds should be calculated for each model.
+The experiment configuration defines which metrics and thresholds should be calculated for each model. In the case of our top performing models, the following configuration was used:
+```
+model_config:
+    'sklearn.svm.LinearSVC':
+        penalty: [l2]
+        C: [1,5,10]
+    'sklearn.linear_model.LogisticRegression':
+        penalty: [l2]
+        C: [1,5,10]
+        solver: [sag]
+        n_jobs: [-1]
+```
+
+In the first iteration, we define a range of parameter values to test. After selecting a model to test further (in this case SVM and logistic regression), the model is refined as we set the parameters closer to their 'optimal' level. The approach taken here is somewhat crude, but it approximates what more advanced methods would do programatically.
+
+*Example coming soon.*
 
 ### Analyzing Results Over Time
-Under construction.
+*Example coming soon.*
 
 ### Deployment Recommendation
 - robustness to outliers
-- stability over splits
+- stability over time splits
 - stability in the future
 - speed and efficiency
+- production environment considerations
 
 
