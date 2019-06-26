@@ -34,7 +34,6 @@ Full model results are available in the Postgres table 'results'. For this exper
 ### Precision/Recall for Top Two Model Types
 
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/svm.png)
-##### Logistic Regression
 *Logistic regression coming soon.*
 
 ### Parameter Grids and Fine Tuning
