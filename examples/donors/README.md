@@ -5,7 +5,7 @@ DonorsChoose.org connects teachers in high-need communities with donors who want
 
 
 ### Time Splits
-Training and testing periods are generated for every
+Training and testing periods are generated for every six month period spanning 1-Jan-2012 through 31-Dec-2013. This results in three train/test splits. Testing periods are separated from training by a 60-day gap to avoid including unobserved outcomes in the training data.
 
 ### Feature Engineering
 Features are generated through a multistep process. The data pipeline contains these steps for each split:
