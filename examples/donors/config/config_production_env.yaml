@@ -1,0 +1,158 @@
+user_metadata:
+  author: 'Tim Hannifan'
+  etl_date: '2019-06-24'
+
+model_comment: 'donors choose example'
+input_path: "../../examples/donors/data/data_full.csv"
+project_path: "../../examples/donors/"
+results_path: "../../examples/donors/results/"
+viz_path: "../../examples/donors/visualization/"
+features_path: "../../examples/donors/feature_data/"
+config_path: "../../examples/donors/config/"
+model_results_path: "../../examples/donors/model/"
+
+generate_graphs: True
+generate_csv: True
+drop_existing_train_test: True
+build_features: True
+load_db: True
+run_models: True
+limit_splits_run: False
+sample_fraction: 1
+random_seed: 112019
+
+temporal_config:
+    start_time: '2012-01-01'
+    end_time: '2014-01-01'
+    prediction_windows: [6]
+    model_update_frequency: 6
+    unknown_outcome_gap: 60
+
+label_config:
+    name: 'not_funded'
+    include_missing_labels_in_train_as: False
+
+model_config:
+    'sklearn.tree.DecisionTreeClassifier':
+        min_samples_split: [2,5,10]
+        max_depth: [1,5,10]
+    'sklearn.svm.LinearSVC':
+        penalty: [l2]
+        C: [1,5,10]
+    'sklearn.neighbors.KNeighborsClassifier':
+        n_neighbors: [3,5]
+        metric: ["euclidean", "manhattan"]
+    'sklearn.linear_model.LogisticRegression':
+        penalty: [l2]
+        C: [1,5,10]
+        solver: [sag]
+        n_jobs: [-1]
+    'sklearn.ensemble.BaggingClassifier':
+        n_estimators: [100,500,1000]
+    'sklearn.ensemble.RandomForestClassifier':
+        n_estimators: [25,50]
+        max_depth: [10,20]
+    'sklearn.ensemble.GradientBoostingClassifier':
+        n_estimators: [100,200,500]
+        min_samples_split: [2,5,10]
+        max_depth: [3,5,10]
+
+scoring:
+    testing_metric_groups:
+        -
+            metrics: ['accuracy','precision', 'recall', 'f1', 'roc_auc']
+            thresholds:
+                percentiles: [ 1, 2, 5, 10, 20, 30, 50]
+
+feature_generation:
+    -
+        drop: ['entity_id','start_time','end_time','date']
+    -
+        categoricals:
+            -
+                column: 'poverty'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'grade'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'type'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'primary_subject'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'city'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'state'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'metro'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'district'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'county'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'teacher_prefix'
+                imputation:
+                    fill_value: 'other_missing'
+            -
+                column: 'schoolid'
+                imputation:
+                    fill_value: 'other_missing'
+    -
+        numeric:
+            -
+                column: 'reach'
+                imputation:
+                    strategy: 'median'
+                scale: False
+            -
+                column: 'price'
+                imputation:
+                    strategy: 'median'
+                scale: True
+            -
+                column: 'latitude'
+                imputation:
+                    strategy: 'median'
+                scale: False
+            -
+                column: 'longitude'
+                imputation:
+                    strategy: 'median'
+                scale: False
+    -
+        binary:
+
+            -
+                column: 'school_charter'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1
+            -
+                column: 'school_magnet'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1
+            -
+                column: 'eligible_double_your_impact_match'
+                imputation:
+                    strategy: 'constant'
+                    fill_value: 0
+                    missing_values: -1

@@ -19,7 +19,7 @@ pip install -r requirements.txt
 cd src/minml
 
 ipython3
-run main --config "../../examples/donors/config/config.yaml" --db "../../examples/donors/config/config_db.yaml"
+run main --config "../../examples/donors/config/config_test_env.yaml" --db "../../examples/donors/config/config_db.yaml"
 ```
 
 In the main config file there is a `load_db` parameter that prevents table generation and re-reading csv data. After the first run, run without this set to False to improve performance. In addition, featurized datasets are saved to  the project directory using a toggle in the main config, which allows you to avoid re-generating features on a dataset.
@@ -30,7 +30,7 @@ See `requirements.txt` for required packages. The current stack requires:
 * Postgres 11.3
 
 ### Configuration
-Minml Experiments are configured via a set of YAML and SQL files within a project directory. See an example configuration ![here](https://github.com/timhannifan/minml/tree/master/examples/donors).
+Minml Experiments are configured via a set of YAML and SQL files within a project directory. See examples for test/production environments ![here](https://github.com/timhannifan/minml/tree/master/examples/donors).
 
 The project directory should contain all the files listed in the example directory, with the same filenames. The main configuration file is `config.yaml`, which defines the Experiment parameters for creating time splits, generating features, specifying models and parameter ranges, and selecting a scoring matrix for model evaluation.
 
