@@ -1,6 +1,6 @@
 user_metadata:
   author: 'Tim Hannifan'
-  etl_date: '2019-06-24'
+  etl_date: '2019-06-26'
 
 model_comment: 'donors choose example'
 input_path: "../../examples/donors/data/data_full.csv"
@@ -13,8 +13,8 @@ model_results_path: "../../examples/donors/model/"
 
 generate_graphs: True
 generate_csv: True
-drop_existing_train_test: True
-build_features: True
+drop_existing_train_test: False
+build_features: False
 load_db: True
 run_models: True
 limit_splits_run: False
@@ -39,23 +39,23 @@ model_config:
     'sklearn.svm.LinearSVC':
         penalty: [l2]
         C: [1,5,10]
-    'sklearn.neighbors.KNeighborsClassifier':
-        n_neighbors: [3,5]
-        metric: ["euclidean", "manhattan"]
+    # 'sklearn.neighbors.KNeighborsClassifier':
+    #     n_neighbors: [3]
+    #     metric: ["euclidean"]
     'sklearn.linear_model.LogisticRegression':
         penalty: [l2]
         C: [1,5,10]
         solver: [sag]
         n_jobs: [-1]
     'sklearn.ensemble.BaggingClassifier':
-        n_estimators: [100,500,1000]
+        n_estimators: [100,500]
     'sklearn.ensemble.RandomForestClassifier':
-        n_estimators: [25,50]
+        n_estimators: [25,100,500]
         max_depth: [10,20]
     'sklearn.ensemble.GradientBoostingClassifier':
-        n_estimators: [100,200,500]
-        min_samples_split: [2,5,10]
-        max_depth: [3,5,10]
+        n_estimators: [100,200]
+        min_samples_split: [2,5]
+        max_depth: [2,4]
 
 scoring:
     testing_metric_groups:
