@@ -22,12 +22,12 @@ The models run for this experiment were decision trees, support vector machines,
 
 Decision trees largely followed baseline trends across all thresholds. The baseline we used was simply the proportion of projects that didn't get funded within 60 days to the whole population of projects, which was around 30%.
 
-Each model has it pros and cons beyond the precision/recall levels: KNN, bagging, and boosting training times are an order of magnitude longer than SVM or logistic regression. If this will be used in a development environment with strict memory or time constraints, it may make sense to use one of the models with shorter training times.
+Each model has it pros and cons beyond the precision/recall levels: KNN, bagging, and boosting training times are an order of magnitude longer than SVM or logistic regression. If this will be used in a development environment with strict memory\ or time constraints, it may make sense to use one of the models with shorter training times.
 
 Early results indicated that the best candidates for further analysis would be gradient boosting, SVM and logisitic regression. These classes of models consistently performed best across all time periods, which is a good indicator of future robustness.
 
 ### Performance Analysis
-Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds. The screenshot below shows our primary metric of interest, precision, for the top 10 performing models that were considered.
+Full model results are available in the Postgres table 'results'. For this experiment, we considered precision, recall, AUC, and accuracy at 1, 2, 5, 10, 20, 30, and 50 percent thresholds. The screenshot below shows our primary metric of interest, precision at 5%, from the results table. A sample output results can be found [here](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/results_sample.csv)
 
 ![](https://github.com/timhannifan/minml/blob/master/examples/donors/sample_results/sample_images/top_10.png)
 
